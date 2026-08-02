@@ -1,0 +1,123 @@
+# Enterprise Knowledge Agent
+
+[![CI](https://github.com/magicyao2028-pixel/enterprise-knowledge-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/magicyao2028-pixel/enterprise-knowledge-agent/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+> 中文介绍：这是一个面向中小企业知识管理场景的离线 Agent 原型。它从经过批准的内部知识样例中检索证据，生成带来源引用的回答；当证据不足或问题涉及密钥、密码等敏感信息时主动拒答并转交人工。公开版本仅使用合成知识内容，不包含任何真实公司内部资料。
+
+**Live prototype:** https://magicyao2028-pixel.github.io/enterprise-knowledge-agent/
+
+## Project context
+
+This portfolio edition documents an AI application and product practice explored in the business context of **Changsha Shiju Trading Co., Ltd.** The public repository uses synthetic policies and makes no claim of production deployment or measured user outcomes.
+
+## Business problem
+
+Policies, operating procedures and product knowledge are often scattered across chat messages and files. Employees spend time searching, receive inconsistent answers, and may act on stale or unsupported information. This prototype demonstrates a controlled knowledge workflow that:
+
+- searches an approved local corpus;
+- returns an extractive answer with visible citations;
+- exposes retrieval scores and an execution trace;
+- abstains when no source supports an answer;
+- blocks requests for credentials and secrets;
+- runs without a paid API or external data transfer.
+
+## What this repository demonstrates
+
+| Capability | Evidence |
+| --- | --- |
+| AI product discovery | [PRD](docs/PRD.md), users, scope and acceptance criteria |
+| Agent workflow | Query validation, retrieval, evidence gate, answer composition and trace |
+| Grounded output | Source IDs, document metadata and retrieved excerpts |
+| Safety design | Abstention, sensitive-request boundary and human review flag |
+| Evaluation thinking | [Evaluation plan](docs/EVALUATION.md) and automated test cases |
+| System planning | [Architecture](docs/ARCHITECTURE.md) with explicit v0.1 boundaries |
+| Runnable proof | Python CLI, synthetic corpus and zero-cost [browser prototype](site/) |
+
+## Core workflow
+
+```mermaid
+flowchart LR
+    Q[Employee question] --> V[Query and policy validation]
+    V --> R[Local document retrieval]
+    R --> E{Enough evidence?}
+    E -->|Yes| A[Extractive answer with citations]
+    E -->|No| H[Abstain and request human review]
+    A --> H2[Human verifies before action]
+```
+
+The current implementation uses deterministic lexical retrieval. It is an Agent workflow prototype, not a claim of advanced semantic RAG or an autonomous enterprise assistant.
+
+## Quick start
+
+Requirements: Python 3.10 or later. No third-party runtime dependency is required.
+
+```bash
+python -m pip install -e .
+knowledge-agent "How quickly should an urgent complaint be escalated?"
+knowledge-agent "What evidence is required for a damaged product return?" --output answer.json
+python -m unittest discover -s tests -v
+```
+
+To run without installation:
+
+```bash
+PYTHONPATH=src python -m enterprise_knowledge_agent.cli "How is AIGC content reviewed?"
+```
+
+To view the static prototype locally:
+
+```bash
+python -m http.server 8000 --directory site
+```
+
+Then visit `http://localhost:8000`.
+
+## Corpus schema
+
+The public sample is a JSON array using this shape:
+
+```json
+{
+  "document_id": "KB-SVC-002",
+  "title": "Customer Complaint Escalation Standard",
+  "department": "Customer Operations",
+  "updated_at": "2026-07-20",
+  "tags": ["complaint", "escalation"],
+  "content": "Synthetic policy text"
+}
+```
+
+## Honest boundaries
+
+- The corpus is synthetic and small.
+- Retrieval is English lexical matching, not embeddings or semantic search.
+- Answers are selected excerpts, not model-generated reasoning.
+- There is no authentication, tenant isolation, database, document ingestion pipeline or production deployment.
+- Confidence is a transparent heuristic, not a calibrated probability.
+- All operational decisions still require an authorized human.
+
+These boundaries leave testable room for later maintenance instead of presenting a one-day prototype as a completed enterprise system.
+
+## Documentation
+
+- [Product requirements](docs/PRD.md)
+- [System architecture](docs/ARCHITECTURE.md)
+- [Evaluation plan](docs/EVALUATION.md)
+- [Security and governance](docs/SECURITY.md)
+- [Maintenance plan](docs/MAINTENANCE_PLAN.md)
+- [Current handoff](HANDOFF.md)
+- [Changelog](CHANGELOG.md)
+
+## Roadmap
+
+- v0.1: offline retrieval, citations, abstention, tests and static demo;
+- v0.2: evaluated query set and retrieval-quality report;
+- v0.3: document chunking and metadata filters;
+- v0.4: optional local embedding adapter and comparison benchmark;
+- v0.5: service API, persistence and access-control design;
+- v1.0: controlled private pilot with knowledge-owner review.
+
+## License
+
+MIT License. See [LICENSE](LICENSE).

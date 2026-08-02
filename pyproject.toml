@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enterprise-knowledge-agent"
+version = "0.1.0"
+description = "An offline, citation-first enterprise knowledge assistant prototype."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "magicyao2028-pixel" }]
+dependencies = []
+
+[project.scripts]
+knowledge-agent = "enterprise_knowledge_agent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

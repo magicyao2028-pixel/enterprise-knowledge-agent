@@ -1,0 +1,34 @@
+[
+  {
+    "document_id": "KB-RET-001",
+    "title": "Damaged Product Return Procedure",
+    "department": "Customer Operations",
+    "updated_at": "2026-07-15",
+    "tags": ["return", "damaged product", "refund", "evidence"],
+    "content": "A damaged-product request should be submitted within seven calendar days after delivery. The customer should provide the order number and a clear photo or video showing the damage. A customer-service lead may approve a refund or replacement after the evidence is reviewed. Food-safety complaints must be escalated immediately and should not wait for the standard review queue."
+  },
+  {
+    "document_id": "KB-SVC-002",
+    "title": "Customer Complaint Escalation Standard",
+    "department": "Customer Operations",
+    "updated_at": "2026-07-20",
+    "tags": ["complaint", "escalation", "response time", "service"],
+    "content": "Urgent complaints involving safety, suspected fraud, a public-platform escalation, or repeated service failure must be assigned to the duty manager within 30 minutes. Other unresolved complaints should be escalated after two unsuccessful handling attempts. The case record must preserve the customer request, evidence, actions taken, owner, and next response deadline."
+  },
+  {
+    "document_id": "KB-INV-003",
+    "title": "Inventory Replenishment Review",
+    "department": "Supply Chain",
+    "updated_at": "2026-07-10",
+    "tags": ["inventory", "replenishment", "stock", "supplier"],
+    "content": "A replenishment proposal requires current available stock, average daily sales, supplier lead time, minimum order quantity, and promotion plans. Orders above the approved monthly purchase budget require the business owner's approval. A recommendation is advisory until a supply-chain owner confirms the forecast and supplier terms."
+  },
+  {
+    "document_id": "KB-CNT-004",
+    "title": "AIGC Content Review Checklist",
+    "department": "Content Operations",
+    "updated_at": "2026-07-28",
+    "tags": ["aigc", "content", "brand", "copyright", "review"],
+    "content": "AI-generated public content must be checked for product accuracy, brand consistency, prohibited claims, copyright risk, personal information, and platform rules before publication. The reviewer should retain the source brief, generated version, final approved asset, and approval record. Publication remains a human decision."
+  }
+]

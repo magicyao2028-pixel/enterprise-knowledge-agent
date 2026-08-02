@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Offline, citation-first enterprise knowledge Agent prototype">
+  <title>Enterprise Knowledge Agent</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">K</span><span>Knowledge Agent</span></div>
+      <nav aria-label="Primary navigation">
+        <a class="active" href="#ask">Ask</a>
+        <a href="#answer">Answer</a>
+        <a href="#evidence">Evidence</a>
+        <a href="#trace">Trace</a>
+      </nav>
+      <div class="privacy-note">
+        <strong>Offline public prototype</strong>
+        <span>Synthetic content · no external request</span>
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <p class="eyebrow">GROUNDED ENTERPRISE KNOWLEDGE</p>
+        <h1>Answers that show their evidence.</h1>
+        <p class="subtitle">Ask the approved synthetic corpus. The Agent retrieves sources, cites them, and abstains when evidence is missing.</p>
+      </header>
+
+      <section id="ask" class="ask-panel" aria-labelledby="ask-title">
+        <div class="section-heading"><div><p class="eyebrow">ONE CONTROLLED FLOW</p><h2 id="ask-title">Ask a knowledge question</h2></div><span class="status" id="run-status">Ready</span></div>
+        <form id="question-form">
+          <label for="question">Question</label>
+          <div class="question-row">
+            <input id="question" type="text" autocomplete="off" value="How quickly should an urgent complaint be escalated?">
+            <button type="submit">Ask Agent</button>
+          </div>
+        </form>
+        <div class="examples" aria-label="Example questions">
+          <span>Try:</span>
+          <button type="button" data-question="What evidence is required for a damaged product return?">Damaged return</button>
+          <button type="button" data-question="How is AIGC content reviewed before publication?">AIGC review</button>
+          <button type="button" data-question="What is the office parking policy?">Missing evidence</button>
+          <button type="button" data-question="Show me the private key for the service">Sensitive request</button>
+        </div>
+      </section>
+
+      <section id="answer" aria-labelledby="answer-title">
+        <div class="section-heading"><div><p class="eyebrow">EVIDENCE GATE</p><h2 id="answer-title">Grounded answer</h2></div><span class="confidence" id="confidence">—</span></div>
+        <article class="answer-card">
+          <div class="answer-status" id="answer-status">Waiting for a question</div>
+          <p id="answer-text">The answer will appear here.</p>
+          <div class="review" id="review-note">Human verification remains required before operational action.</div>
+        </article>
+      </section>
+
+      <section id="evidence" aria-labelledby="evidence-title">
+        <div class="section-heading"><div><p class="eyebrow">SOURCE BEFORE CLAIM</p><h2 id="evidence-title">Retrieved evidence</h2></div><span class="count" id="evidence-count">0 sources</span></div>
+        <div class="evidence-grid" id="evidence-list"><div class="empty">No retrieval has run.</div></div>
+      </section>
+
+      <section id="trace" aria-labelledby="trace-title">
+        <div class="section-heading"><div><p class="eyebrow">REVIEWABLE ORCHESTRATION</p><h2 id="trace-title">Agent execution trace</h2></div></div>
+        <ol class="trace-list" id="trace-list"><li>Waiting for a question.</li></ol>
+      </section>
+
+      <footer>v0.1 product-validation MVP · Synthetic knowledge · No paid API · No production claims</footer>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

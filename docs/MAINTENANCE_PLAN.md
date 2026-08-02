@@ -1,0 +1,16 @@
+# Maintenance Plan
+
+The initial repository is intentionally limited. Each round must add implementation or measurable validation evidence; cosmetic-only changes do not count.
+
+| Round | Planned capability | Status |
+| --- | --- | --- |
+| M1 | Reviewed query set and retrieval-quality report | Planned |
+| M2 | Chunking and metadata filters | Planned |
+| M3 | Conflicting-source and freshness handling | Planned |
+| M4 | Optional local embedding adapter with lexical baseline comparison | Planned |
+| M5 | Feedback capture and evaluation replay | Planned |
+| M6 | Service API and contract tests | Planned |
+| M7 | Role/document permission model | Planned |
+| M8 | Audit events, observability and error taxonomy | Planned |
+| M9 | Performance, concurrency and failure-recovery benchmark | Planned |
+| M10 | Controlled-pilot package and final portfolio case study | Planned |
