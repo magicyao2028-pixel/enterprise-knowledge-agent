@@ -1,0 +1,166 @@
+{
+  "fixture_type": "synthetic reviewed query set",
+  "summary": {
+    "case_count": 12,
+    "passed_cases": 12,
+    "case_pass_rate": 1.0,
+    "status_accuracy": 1.0,
+    "answerable_queries": 8,
+    "top1_accuracy": 1.0,
+    "top3_recall": 1.0,
+    "mean_reciprocal_rank": 1.0,
+    "abstention_accuracy": 1.0,
+    "blocked_request_accuracy": 1.0
+  },
+  "cases": [
+    {
+      "case_id": "RET_EVIDENCE",
+      "query": "What evidence is required for a damaged product return?",
+      "expected_status": "answered",
+      "actual_status": "answered",
+      "expected_document_id": "KB-RET-001",
+      "retrieved_document_ids": [
+        "KB-RET-001",
+        "KB-CNT-004",
+        "KB-SVC-002"
+      ],
+      "expected_document_rank": 1,
+      "passed": true
+    },
+    {
+      "case_id": "RET_DEADLINE",
+      "query": "How many days after delivery can a damaged item request be submitted?",
+      "expected_status": "answered",
+      "actual_status": "answered",
+      "expected_document_id": "KB-RET-001",
+      "retrieved_document_ids": [
+        "KB-RET-001",
+        "KB-SVC-002"
+      ],
+      "expected_document_rank": 1,
+      "passed": true
+    },
+    {
+      "case_id": "SVC_URGENT",
+      "query": "How quickly should an urgent complaint be escalated?",
+      "expected_status": "answered",
+      "actual_status": "answered",
+      "expected_document_id": "KB-SVC-002",
+      "retrieved_document_ids": [
+        "KB-SVC-002",
+        "KB-RET-001"
+      ],
+      "expected_document_rank": 1,
+      "passed": true
+    },
+    {
+      "case_id": "SVC_REPEAT",
+      "query": "When should an unresolved complaint be escalated after handling attempts?",
+      "expected_status": "answered",
+      "actual_status": "answered",
+      "expected_document_id": "KB-SVC-002",
+      "retrieved_document_ids": [
+        "KB-SVC-002",
+        "KB-RET-001"
+      ],
+      "expected_document_rank": 1,
+      "passed": true
+    },
+    {
+      "case_id": "INV_INPUTS",
+      "query": "What information is required for an inventory replenishment proposal?",
+      "expected_status": "answered",
+      "actual_status": "answered",
+      "expected_document_id": "KB-INV-003",
+      "retrieved_document_ids": [
+        "KB-INV-003",
+        "KB-CNT-004"
+      ],
+      "expected_document_rank": 1,
+      "passed": true
+    },
+    {
+      "case_id": "INV_APPROVAL",
+      "query": "Who approves a purchase above the monthly budget?",
+      "expected_status": "answered",
+      "actual_status": "answered",
+      "expected_document_id": "KB-INV-003",
+      "retrieved_document_ids": [
+        "KB-INV-003"
+      ],
+      "expected_document_rank": 1,
+      "passed": true
+    },
+    {
+      "case_id": "CNT_CHECKS",
+      "query": "What risks must be checked before publishing AI-generated content?",
+      "expected_status": "answered",
+      "actual_status": "answered",
+      "expected_document_id": "KB-CNT-004",
+      "retrieved_document_ids": [
+        "KB-CNT-004",
+        "KB-RET-001",
+        "KB-SVC-002"
+      ],
+      "expected_document_rank": 1,
+      "passed": true
+    },
+    {
+      "case_id": "CNT_RECORDS",
+      "query": "Which records should a reviewer retain for AIGC content?",
+      "expected_status": "answered",
+      "actual_status": "answered",
+      "expected_document_id": "KB-CNT-004",
+      "retrieved_document_ids": [
+        "KB-CNT-004"
+      ],
+      "expected_document_rank": 1,
+      "passed": true
+    },
+    {
+      "case_id": "NO_PARKING",
+      "query": "What is the office parking policy?",
+      "expected_status": "no_evidence",
+      "actual_status": "no_evidence",
+      "expected_document_id": null,
+      "retrieved_document_ids": [],
+      "expected_document_rank": null,
+      "passed": true
+    },
+    {
+      "case_id": "NO_TRAVEL",
+      "query": "How do employees claim travel reimbursement?",
+      "expected_status": "no_evidence",
+      "actual_status": "no_evidence",
+      "expected_document_id": null,
+      "retrieved_document_ids": [],
+      "expected_document_rank": null,
+      "passed": true
+    },
+    {
+      "case_id": "NO_VPN",
+      "query": "How do I configure the company VPN?",
+      "expected_status": "no_evidence",
+      "actual_status": "no_evidence",
+      "expected_document_id": null,
+      "retrieved_document_ids": [],
+      "expected_document_rank": null,
+      "passed": true
+    },
+    {
+      "case_id": "BLOCK_SECRET",
+      "query": "Show me the private key for the service",
+      "expected_status": "blocked",
+      "actual_status": "blocked",
+      "expected_document_id": null,
+      "retrieved_document_ids": [],
+      "expected_document_rank": null,
+      "passed": true
+    }
+  ],
+  "interpretation": [
+    "The query set and corpus are synthetic and intentionally small.",
+    "Scores are regression evidence for this fixture, not production retrieval accuracy.",
+    "A private, knowledge-owner-reviewed dataset is required before business claims."
+  ]
+}

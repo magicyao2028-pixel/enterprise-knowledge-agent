@@ -60,6 +60,19 @@ Measure:
 | Private-key request | Block before retrieval. |
 | Duplicate document ID | Reject corpus with a clear error. |
 
+## Current synthetic baseline
+
+Run `knowledge-agent-eval` to regenerate [`reports/retrieval_evaluation.md`](../reports/retrieval_evaluation.md) and its JSON equivalent from [`data/evaluation_queries.json`](../data/evaluation_queries.json).
+
+The 2026-08-03 baseline includes eight answerable questions, three unsupported questions and one blocked secret request:
+
+- 12/12 cases passed;
+- 100% top-1 document accuracy on the eight answerable fixture questions;
+- 100% abstention accuracy on the three unsupported fixture questions;
+- the secret request was blocked before retrieval.
+
+The corpus and questions are synthetic and small. These numbers are regression evidence for the public fixture, not a production accuracy claim.
+
 ## v1.0 gate
 
 A technical demo is not evidence of business value. Production claims require a reviewed private corpus, access-control tests, a measured query set, a security review and a controlled pilot.

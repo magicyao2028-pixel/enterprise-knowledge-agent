@@ -31,6 +31,7 @@ Policies, operating procedures and product knowledge are often scattered across 
 | Grounded output | Source IDs, document metadata and retrieved excerpts |
 | Safety design | Abstention, sensitive-request boundary and human review flag |
 | Evaluation thinking | [Evaluation plan](docs/EVALUATION.md) and automated test cases |
+| Reproducible retrieval evidence | [Twelve-query baseline](reports/retrieval_evaluation.md) covering ranking, abstention and blocking |
 | System planning | [Architecture](docs/ARCHITECTURE.md) with explicit v0.1 boundaries |
 | Runnable proof | Python CLI, synthetic corpus and zero-cost [browser prototype](site/) |
 
@@ -104,6 +105,7 @@ These boundaries leave testable room for later maintenance instead of presenting
 - [Product requirements](docs/PRD.md)
 - [System architecture](docs/ARCHITECTURE.md)
 - [Evaluation plan](docs/EVALUATION.md)
+- [Generated retrieval baseline](reports/retrieval_evaluation.md)
 - [Security and governance](docs/SECURITY.md)
 - [Maintenance plan](docs/MAINTENANCE_PLAN.md)
 - [Current handoff](HANDOFF.md)
