@@ -5,7 +5,7 @@
 | Field | Value |
 | --- | --- |
 | Product | Enterprise Knowledge Agent |
-| Version | 0.1 |
+| Version | 0.3 |
 | Status | Product-validation MVP |
 | Primary user | Employee in a small or medium-sized business |
 | Public data policy | Synthetic documents only |
@@ -47,6 +47,8 @@ This hypothesis has not been validated with real users. v0.1 tests technical beh
 6. Abstain when the corpus has no matching evidence.
 7. Block explicit requests for secrets or credentials.
 8. Preserve an Agent execution trace.
+9. Split documents into stable chunks before ranking.
+10. Filter retrieval by exact department, tag and minimum update date.
 
 ### Out of scope
 
@@ -68,6 +70,8 @@ This hypothesis has not been validated with real users. v0.1 tests technical beh
 | FR-05 | Protect secrets | Must | An explicit secret request is blocked before retrieval. |
 | FR-06 | Expose trace | Should | Response lists the executed workflow steps and status. |
 | FR-07 | Export JSON | Should | CLI writes a structured answer when `--output` is supplied. |
+| FR-08 | Filter metadata | Should | CLI and Python callers can restrict search by exact department, tag and update date. |
+| FR-09 | Cite chunks | Should | Every answered response identifies the stable chunk used as evidence. |
 
 ## 7. Success metrics for a future pilot
 

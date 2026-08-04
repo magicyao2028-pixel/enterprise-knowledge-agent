@@ -11,6 +11,8 @@ Determine whether the Agent retrieves the right approved source, cites it correc
 - valid documents load consistently;
 - duplicate IDs and malformed corpora fail clearly;
 - the same query and corpus produce the same ranking;
+- chunk identifiers remain stable for unchanged content;
+- metadata filters exclude out-of-scope documents before ranking;
 - answered responses always contain citations;
 - unsupported responses contain no invented citation;
 - sensitive requests are blocked before retrieval.
@@ -72,6 +74,8 @@ The 2026-08-03 baseline includes eight answerable questions, three unsupported q
 - the secret request was blocked before retrieval.
 
 The corpus and questions are synthetic and small. These numbers are regression evidence for the public fixture, not a production accuracy claim.
+
+The v0.3 maintenance run keeps the same 12/12 baseline after chunking. Filter behavior is covered separately because the original query set intentionally runs without a department or tag restriction.
 
 ## v1.0 gate
 

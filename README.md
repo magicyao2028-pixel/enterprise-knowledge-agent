@@ -16,6 +16,8 @@ This portfolio edition documents an AI application and product practice explored
 Policies, operating procedures and product knowledge are often scattered across chat messages and files. Employees spend time searching, receive inconsistent answers, and may act on stale or unsupported information. This prototype demonstrates a controlled knowledge workflow that:
 
 - searches an approved local corpus;
+- splits documents into stable, reviewable chunks before ranking;
+- filters retrieval by department, tag and minimum update date;
 - returns an extractive answer with visible citations;
 - exposes retrieval scores and an execution trace;
 - abstains when no source supports an answer;
@@ -32,6 +34,7 @@ Policies, operating procedures and product knowledge are often scattered across 
 | Safety design | Abstention, sensitive-request boundary and human review flag |
 | Evaluation thinking | [Evaluation plan](docs/EVALUATION.md) and automated test cases |
 | Reproducible retrieval evidence | [Twelve-query baseline](reports/retrieval_evaluation.md) covering ranking, abstention and blocking |
+| Controlled search scope | Stable chunk IDs plus department, tag and freshness filters |
 | System planning | [Architecture](docs/ARCHITECTURE.md) with explicit v0.1 boundaries |
 | Runnable proof | Python CLI, synthetic corpus and zero-cost [browser prototype](site/) |
 
@@ -57,6 +60,7 @@ Requirements: Python 3.10 or later. No third-party runtime dependency is require
 python -m pip install -e .
 knowledge-agent "How quickly should an urgent complaint be escalated?"
 knowledge-agent "What evidence is required for a damaged product return?" --output answer.json
+knowledge-agent "How should a complaint be escalated?" --department "Customer Operations" --tag complaint --updated-after 2026-07-01
 python -m unittest discover -s tests -v
 ```
 
@@ -93,6 +97,7 @@ The public sample is a JSON array using this shape:
 
 - The corpus is synthetic and small.
 - Retrieval is English lexical matching, not embeddings or semantic search.
+- Metadata filters are exact matches; they are not an authorization system.
 - Answers are selected excerpts, not model-generated reasoning.
 - There is no authentication, tenant isolation, database, document ingestion pipeline or production deployment.
 - Confidence is a transparent heuristic, not a calibrated probability.
@@ -115,7 +120,7 @@ These boundaries leave testable room for later maintenance instead of presenting
 
 - v0.1: offline retrieval, citations, abstention, tests and static demo;
 - v0.2: evaluated query set and retrieval-quality report;
-- v0.3: document chunking and metadata filters;
+- v0.3: document chunking and metadata filters (current);
 - v0.4: optional local embedding adapter and comparison benchmark;
 - v0.5: service API, persistence and access-control design;
 - v1.0: controlled private pilot with knowledge-owner review.

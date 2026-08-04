@@ -19,7 +19,9 @@ flowchart TB
     subgraph Agent
       V[Query validator]
       S[Safety boundary]
-      R[Lexical retriever]
+      F[Metadata filter]
+      K[Stable chunker]
+      R[Lexical chunk retriever]
       G[Evidence gate]
       C[Grounded composer]
     end
@@ -29,9 +31,9 @@ flowchart TB
     end
     CLI --> V
     WEB --> V
-    V --> S --> R
-    J --> R
-    M --> R
+    V --> S --> F --> K --> R
+    J --> F
+    M --> F
     R --> G
     G -->|Supported| C
     G -->|Unsupported| H[Human review]
@@ -43,9 +45,9 @@ The browser prototype mirrors the main decision flow for a zero-setup demonstrat
 
 | Component | Responsibility |
 | --- | --- |
-| `models.py` | Validate knowledge-document structure and response evidence objects. |
+| `models.py` | Validate knowledge documents, metadata filters, chunks and response evidence objects. |
 | `corpus.py` | Load JSON, reject malformed content and duplicate identifiers. |
-| `retrieval.py` | Tokenize, score, rank and extract the best supporting sentence. |
+| `retrieval.py` | Split stable chunks, apply metadata scope, score and rank supporting excerpts. |
 | `agent.py` | Orchestrate safety, evidence, confidence, citations and abstention. |
 | `cli.py` | Provide local query and JSON-export interfaces. |
 | `site/` | Show the product flow without a server or paid API. |

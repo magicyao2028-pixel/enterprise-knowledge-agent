@@ -38,6 +38,17 @@
             <input id="question" type="text" autocomplete="off" value="How quickly should an urgent complaint be escalated?">
             <button type="submit">Ask Agent</button>
           </div>
+          <div class="filter-row">
+            <label for="department">Department filter
+              <select id="department">
+                <option value="">All approved departments</option>
+                <option>Customer Operations</option>
+                <option>Supply Chain</option>
+                <option>Content Operations</option>
+              </select>
+            </label>
+            <span>Retrieval ranks stable document chunks after metadata filtering.</span>
+          </div>
         </form>
         <div class="examples" aria-label="Example questions">
           <span>Try:</span>
@@ -67,7 +78,7 @@
         <ol class="trace-list" id="trace-list"><li>Waiting for a question.</li></ol>
       </section>
 
-      <footer>v0.1 product-validation MVP · Synthetic knowledge · No paid API · No production claims</footer>
+      <footer>v0.3 product-validation prototype · Chunked retrieval · Metadata filters · Synthetic knowledge · No paid API</footer>
     </main>
   </div>
   <script src="app.js"></script>

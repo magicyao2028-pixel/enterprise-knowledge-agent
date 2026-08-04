@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Iterable
 
-from .models import KnowledgeDocument
+from .models import KnowledgeDocument, MetadataFilters
 from .retrieval import expand_query_terms, search_documents
 
 
@@ -31,7 +31,7 @@ class KnowledgeAgent:
             raise ValueError("top_k must be at least 1")
         self.top_k = top_k
 
-    def ask(self, query: str) -> dict[str, object]:
+    def ask(self, query: str, filters: MetadataFilters | None = None) -> dict[str, object]:
         cleaned_query = query.strip()
         if not cleaned_query:
             raise ValueError("Query must not be blank")
@@ -43,11 +43,12 @@ class KnowledgeAgent:
             trace.record("safety_boundary", "Block requests for secrets or credentials.", "blocked")
             return self._blocked_response(cleaned_query, trace.steps)
 
-        hits = search_documents(cleaned_query, self.documents, self.top_k)
-        trace.record("retrieve_documents", "Rank local documents with explicit lexical evidence.")
+        applied_filters = filters or MetadataFilters()
+        hits = search_documents(cleaned_query, self.documents, self.top_k, filters=applied_filters)
+        trace.record("retrieve_chunks", "Filter metadata and rank local document chunks with explicit lexical evidence.")
         if not hits:
             trace.record("evidence_gate", "Abstain because no source supports an answer.", "no_evidence")
-            return self._no_evidence_response(cleaned_query, trace.steps)
+            return self._no_evidence_response(cleaned_query, trace.steps, applied_filters)
 
         query_terms = expand_query_terms(cleaned_query)
         matched_terms = set(hits[0].matched_terms)
@@ -57,10 +58,11 @@ class KnowledgeAgent:
         trace.record("evaluate_evidence", "Estimate lexical coverage and keep uncertainty visible.")
 
         selected = hits[:2]
-        answer = " ".join(f"{hit.excerpt} [{hit.document.document_id}]" for hit in selected)
+        answer = " ".join(f"{hit.excerpt} [{hit.chunk_id}]" for hit in selected)
         citations = [
             {
                 "document_id": hit.document.document_id,
+                "chunk_id": hit.chunk_id,
                 "title": hit.document.title,
                 "department": hit.document.department,
                 "updated_at": hit.document.updated_at,
@@ -77,16 +79,21 @@ class KnowledgeAgent:
             "needs_human_review": confidence_label == "low",
             "citations": citations,
             "retrieved": [hit.to_dict() for hit in hits],
+            "filters_applied": applied_filters.to_dict(),
             "trace": trace.steps,
             "limitations": [
-                "Retrieval is English lexical matching, not semantic search.",
+                "Retrieval is English lexical chunk matching, not semantic search.",
                 "The answer is extractive and may not resolve ambiguous policy questions.",
                 "Source freshness and access permissions require production controls.",
             ],
         }
 
     @staticmethod
-    def _no_evidence_response(query: str, trace: list[dict[str, str]]) -> dict[str, object]:
+    def _no_evidence_response(
+        query: str,
+        trace: list[dict[str, str]],
+        filters: MetadataFilters,
+    ) -> dict[str, object]:
         return {
             "query": query,
             "status": "no_evidence",
@@ -95,6 +102,7 @@ class KnowledgeAgent:
             "needs_human_review": True,
             "citations": [],
             "retrieved": [],
+            "filters_applied": filters.to_dict(),
             "trace": trace,
         }
 

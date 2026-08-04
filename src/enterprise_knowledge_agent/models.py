@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from datetime import date
 from typing import Any
 
 
@@ -43,8 +44,49 @@ class KnowledgeDocument:
 
 
 @dataclass(frozen=True)
+class KnowledgeChunk:
+    chunk_id: str
+    document: KnowledgeDocument
+    text: str
+    position: int
+
+
+@dataclass(frozen=True)
+class MetadataFilters:
+    departments: tuple[str, ...] = ()
+    tags: tuple[str, ...] = ()
+    updated_after: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.updated_after:
+            try:
+                date.fromisoformat(self.updated_after)
+            except ValueError as exc:
+                raise ValueError("updated_after must be an ISO-8601 date") from exc
+
+    def matches(self, document: KnowledgeDocument) -> bool:
+        if self.departments and document.department.casefold() not in {item.casefold() for item in self.departments}:
+            return False
+        if self.tags:
+            document_tags = {item.casefold() for item in document.tags}
+            if not {item.casefold() for item in self.tags}.intersection(document_tags):
+                return False
+        if self.updated_after and document.updated_at < self.updated_after:
+            return False
+        return True
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "departments": list(self.departments),
+            "tags": list(self.tags),
+            "updated_after": self.updated_after,
+        }
+
+
+@dataclass(frozen=True)
 class SearchHit:
     document: KnowledgeDocument
+    chunk_id: str
     score: float
     matched_terms: tuple[str, ...]
     excerpt: str
@@ -52,6 +94,7 @@ class SearchHit:
     def to_dict(self) -> dict[str, Any]:
         return {
             "document_id": self.document.document_id,
+            "chunk_id": self.chunk_id,
             "title": self.document.title,
             "department": self.document.department,
             "updated_at": self.document.updated_at,

@@ -5,7 +5,7 @@ The initial repository is intentionally limited. Each round must add implementat
 | Round | Planned capability | Status |
 | --- | --- | --- |
 | M1 | Reviewed query set and retrieval-quality report | Complete |
-| M2 | Chunking and metadata filters | Planned |
+| M2 | Chunking and metadata filters | Complete |
 | M3 | Conflicting-source and freshness handling | Planned |
 | M4 | Optional local embedding adapter with lexical baseline comparison | Planned |
 | M5 | Feedback capture and evaluation replay | Planned |

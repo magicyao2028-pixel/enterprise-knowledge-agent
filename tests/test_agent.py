@@ -3,7 +3,8 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from enterprise_knowledge_agent import KnowledgeAgent, KnowledgeDocument, load_documents
+from enterprise_knowledge_agent import KnowledgeAgent, KnowledgeDocument, MetadataFilters, load_documents
+from enterprise_knowledge_agent.retrieval import chunk_document
 
 
 def documents():
@@ -33,6 +34,7 @@ class KnowledgeAgentTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "answered")
         self.assertEqual(result["citations"][0]["document_id"], "KB-1")
+        self.assertEqual(result["citations"][0]["chunk_id"], "KB-1-C001")
         self.assertIn("photo evidence", result["answer"])
         self.assertEqual(result["trace"][-1]["tool"], "compose_grounded_answer")
 
@@ -62,6 +64,45 @@ class KnowledgeAgentTests(unittest.TestCase):
             path.write_text(json.dumps(payload), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "must be unique"):
                 load_documents(path)
+
+    def test_chunk_ids_are_stable_and_content_is_preserved(self):
+        document = KnowledgeDocument(
+            document_id="KB-LONG",
+            title="Long Procedure",
+            department="Operations",
+            updated_at="2026-07-01",
+            content="First step confirms the request. Second step records the owner. Third step closes the case.",
+        )
+
+        first = chunk_document(document, max_words=8)
+        second = chunk_document(document, max_words=8)
+
+        self.assertEqual([chunk.chunk_id for chunk in first], [chunk.chunk_id for chunk in second])
+        self.assertEqual([chunk.chunk_id for chunk in first], ["KB-LONG-C001", "KB-LONG-C002", "KB-LONG-C003"])
+        self.assertIn("Second step", " ".join(chunk.text for chunk in first))
+
+    def test_department_filter_restricts_retrieval(self):
+        result = KnowledgeAgent(documents()).ask(
+            "What is the urgent escalation deadline?",
+            MetadataFilters(departments=("Finance",)),
+        )
+
+        self.assertEqual(result["status"], "no_evidence")
+        self.assertEqual(result["filters_applied"]["departments"], ["Finance"])
+
+    def test_tag_and_updated_after_filters_apply_together(self):
+        result = KnowledgeAgent(documents()).ask(
+            "How should a complaint be escalated?",
+            MetadataFilters(tags=("urgent",), updated_after="2026-07-02"),
+        )
+
+        self.assertEqual(result["status"], "answered")
+        self.assertEqual(result["citations"][0]["document_id"], "KB-2")
+        self.assertEqual(result["filters_applied"]["tags"], ["urgent"])
+
+    def test_invalid_updated_after_date_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "ISO-8601"):
+            MetadataFilters(updated_after="July 2")
 
 
 if __name__ == "__main__":

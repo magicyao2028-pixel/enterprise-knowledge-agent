@@ -2,9 +2,9 @@
 
 ## Current state
 
-- Release stage: v0.2 product-validation prototype.
-- Maintenance completed: M1/10.
-- Core flow: validated corpus → query safety → lexical retrieval → evidence gate → cited answer or abstention.
+- Release stage: v0.3 product-validation prototype.
+- Maintenance completed: M2/10.
+- Core flow: validated corpus → query safety → metadata filter → stable chunking → lexical retrieval → evidence gate → chunk-cited answer or abstention.
 - Public data: synthetic only.
 - Runtime cost: zero paid API dependency.
 
@@ -18,11 +18,12 @@ PYTHONPATH=src python -m enterprise_knowledge_agent.evaluation_cli
 
 ## Next maintenance round
 
-M2 should add document chunking and metadata filters while preserving the current lexical baseline for comparison. It should not add a vector database yet.
+M3 should add conflicting-source and freshness handling. It should surface ambiguity and stale evidence rather than adding a vector database yet.
 
 ## Known limitations
 
 - English lexical retrieval only;
+- exact metadata filters are retrieval controls, not user authorization;
 - small synthetic corpus;
 - perfect fixture scores do not estimate production retrieval accuracy;
 - extractive answer composition;

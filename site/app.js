@@ -26,29 +26,60 @@ function overlap(value, queryTerms) {
   return [...queryTerms].filter(term => terms.has(term)).length;
 }
 
-function retrieve(query) {
-  const queryTerms = queryTermsFor(query);
-  if (!queryTerms.size) return [];
-  return documents.map(document => {
-    const titleTerms = new Set(tokenize(document.title));
-    const tagTerms = new Set(tokenize(document.tags.join(" ")));
-    const contentTerms = new Set(tokenize(document.content));
-    const matched = [...queryTerms].filter(term => titleTerms.has(term) || tagTerms.has(term) || contentTerms.has(term));
-    let score = matched.reduce((total,term) => total + (titleTerms.has(term) ? 3 : 0) + (tagTerms.has(term) ? 2 : 0) + (contentTerms.has(term) ? 1 : 0), 0);
-    score += matched.length / queryTerms.size;
-    if (`${document.title} ${document.content}`.toLowerCase().includes(query.trim().toLowerCase())) score += 4;
-    return {...document, matched, score:Number(score.toFixed(3)), excerpt:bestExcerpt(document.content,queryTerms)};
-  }).filter(hit => hit.matched.length).sort((a,b) => b.score - a.score || a.document_id.localeCompare(b.document_id)).slice(0,3);
+function chunkDocument(document, maxWords = 55) {
+  const sentences = document.content.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const chunks = [];
+  let current = [];
+  let words = 0;
+  sentences.forEach(sentence => {
+    const length = sentence.split(/\s+/).length;
+    if (current.length && words + length > maxWords) {
+      chunks.push(current.join(" "));
+      current = [];
+      words = 0;
+    }
+    current.push(sentence);
+    words += length;
+  });
+  if (current.length) chunks.push(current.join(" "));
+  return (chunks.length ? chunks : [document.content]).map((text,index) => ({
+    chunk_id:`${document.document_id}-C${String(index + 1).padStart(3,"0")}`,
+    text
+  }));
 }
 
-function ask(query) {
+function retrieve(query, department = "") {
+  const queryTerms = queryTermsFor(query);
+  if (!queryTerms.size) return [];
+  const hits = [];
+  documents.filter(document => !department || document.department === department).forEach(document => {
+    const titleTerms = new Set(tokenize(document.title));
+    const tagTerms = new Set(tokenize(document.tags.join(" ")));
+    chunkDocument(document).forEach(chunk => {
+      const contentTerms = new Set(tokenize(chunk.text));
+      const matched = [...queryTerms].filter(term => titleTerms.has(term) || tagTerms.has(term) || contentTerms.has(term));
+      if (!matched.length) return;
+      let score = matched.reduce((total,term) => total + (titleTerms.has(term) ? 3 : 0) + (tagTerms.has(term) ? 2 : 0) + (contentTerms.has(term) ? 1 : 0), 0);
+      score += matched.length / queryTerms.size;
+      if (`${document.title} ${chunk.text}`.toLowerCase().includes(query.trim().toLowerCase())) score += 4;
+      hits.push({...document, ...chunk, matched, score:Number(score.toFixed(3)), excerpt:bestExcerpt(chunk.text,queryTerms)});
+    });
+  });
+  const best = new Map();
+  hits.forEach(hit => {
+    if (!best.has(hit.document_id) || best.get(hit.document_id).score < hit.score) best.set(hit.document_id,hit);
+  });
+  return [...best.values()].sort((a,b) => b.score - a.score || a.document_id.localeCompare(b.document_id)).slice(0,3);
+}
+
+function ask(query, department = "") {
   const trace = [{tool:"validate_query",purpose:"Check query shape and policy boundaries.",status:"completed"}];
   if (sensitiveTerms.some(term => query.toLowerCase().includes(term))) {
     trace.push({tool:"safety_boundary",purpose:"Block requests for secrets or credentials.",status:"blocked"});
     return {status:"blocked",answer:"I cannot provide or retrieve passwords, credentials, private keys, or secret tokens.",confidence:{label:"not applicable",score:1},review:true,hits:[],trace};
   }
-  const hits = retrieve(query);
-  trace.push({tool:"retrieve_documents",purpose:"Rank local documents with explicit lexical evidence.",status:"completed"});
+  const hits = retrieve(query, department);
+  trace.push({tool:"retrieve_chunks",purpose:"Filter metadata and rank stable local document chunks.",status:"completed"});
   if (!hits.length) {
     trace.push({tool:"evidence_gate",purpose:"Abstain because no source supports an answer.",status:"no evidence"});
     return {status:"no evidence",answer:"I could not find enough evidence in the approved knowledge corpus. Please ask a knowledge owner.",confidence:{label:"none",score:0},review:true,hits,trace};
@@ -59,7 +90,7 @@ function ask(query) {
   const label = score >= .8 ? "high" : score >= .6 ? "medium" : "low";
   trace.push({tool:"evaluate_evidence",purpose:"Estimate lexical coverage and keep uncertainty visible.",status:"completed"});
   trace.push({tool:"compose_grounded_answer",purpose:"Compose only from retrieved excerpts and attach citations.",status:"completed"});
-  return {status:"answered",answer:hits.slice(0,2).map(hit => `${hit.excerpt} [${hit.document_id}]`).join(" "),confidence:{label,score:Number(score.toFixed(2))},review:label === "low",hits,trace};
+  return {status:"answered",answer:hits.slice(0,2).map(hit => `${hit.excerpt} [${hit.chunk_id}]`).join(" "),confidence:{label,score:Number(score.toFixed(2))},review:label === "low",hits,trace};
 }
 
 function render(result) {
@@ -71,7 +102,7 @@ function render(result) {
   document.getElementById("evidence-count").textContent = `${result.hits.length} source${result.hits.length === 1 ? "" : "s"}`;
   document.getElementById("evidence-list").innerHTML = result.hits.length ? result.hits.map(hit => `
     <article class="evidence-card">
-      <div class="source">${escapeHtml(hit.document_id)} · ${escapeHtml(hit.department)}</div>
+      <div class="source">${escapeHtml(hit.chunk_id)} · ${escapeHtml(hit.department)}</div>
       <h3>${escapeHtml(hit.title)}</h3>
       <p>${escapeHtml(hit.excerpt)}</p>
       <small>Updated ${escapeHtml(hit.updated_at)}</small>
@@ -83,7 +114,7 @@ function render(result) {
 function runQuestion(question) {
   const cleaned = question.trim();
   if (!cleaned) return;
-  render(ask(cleaned));
+  render(ask(cleaned, document.getElementById("department").value));
 }
 
 document.getElementById("question-form").addEventListener("submit", event => {

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .agent import KnowledgeAgent
 from .corpus import load_documents
+from .models import MetadataFilters
 
 
 def parse_args() -> argparse.Namespace:
@@ -13,13 +14,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("query", help="Question to ask")
     parser.add_argument("--corpus", type=Path, default=Path("data/knowledge.json"), help="Knowledge JSON file")
     parser.add_argument("--top-k", type=int, default=3, help="Maximum number of retrieved documents")
+    parser.add_argument("--department", action="append", default=[], help="Filter by department; may be repeated")
+    parser.add_argument("--tag", action="append", default=[], help="Filter by tag; may be repeated")
+    parser.add_argument("--updated-after", help="Filter to documents updated on or after this ISO-8601 date")
     parser.add_argument("--output", type=Path, help="Optional path for the JSON answer")
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    answer = KnowledgeAgent(load_documents(args.corpus), top_k=args.top_k).ask(args.query)
+    filters = MetadataFilters(tuple(args.department), tuple(args.tag), args.updated_after)
+    answer = KnowledgeAgent(load_documents(args.corpus), top_k=args.top_k).ask(args.query, filters)
     rendered = json.dumps(answer, ensure_ascii=False, indent=2)
     if args.output:
         args.output.write_text(rendered + "\n", encoding="utf-8")

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 - 2026-08-04
+
+- added deterministic sentence-aware document chunking with stable chunk identifiers;
+- added exact department, tag and minimum-update-date filters to the Python workflow and CLI;
+- preserved the reviewed twelve-case lexical retrieval baseline;
+- exposed chunk citations and department filtering in the browser prototype;
+- added regression tests for chunk stability, filter combinations and invalid dates.
+
 ## 0.2.0 - 2026-08-03
 
 - added a twelve-case reviewed synthetic query set;
