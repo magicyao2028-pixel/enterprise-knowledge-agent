@@ -5,7 +5,8 @@ const documents = [
   {document_id:"KB-CNT-004",title:"AIGC Content Review Checklist",department:"Content Operations",updated_at:"2026-07-28",tags:["aigc","content","brand","copyright","review"],content:"AI-generated public content must be checked for product accuracy, brand consistency, prohibited claims, copyright risk, personal information, and platform rules before publication. The reviewer should retain the source brief, generated version, final approved asset, and approval record. Publication remains a human decision."},
   {document_id:"KB-TRV-005",title:"Domestic Travel Reimbursement Policy",department:"Finance",updated_at:"2026-08-01",review_due_at:"2026-12-31",claim_key:"travel.domestic_hotel_ceiling",claim_value:"CNY 500 per night",tags:["travel","hotel","reimbursement","policy"],content:"The domestic business-travel hotel reimbursement ceiling is CNY 500 per night. Exceptions require written finance approval before booking."},
   {document_id:"KB-TRV-006",title:"Regional Travel Reimbursement Memo",department:"Regional Operations",updated_at:"2026-08-05",review_due_at:"2026-12-31",claim_key:"travel.domestic_hotel_ceiling",claim_value:"CNY 650 per night",tags:["travel","hotel","reimbursement","memo"],content:"The domestic business-travel hotel reimbursement ceiling is CNY 650 per night for regional teams. The memo does not identify whether it supersedes the finance policy."},
-  {document_id:"KB-SUP-007",title:"Legacy Supplier Quote Requirement",department:"Procurement",updated_at:"2025-01-15",review_due_at:"2025-12-31",claim_key:"procurement.minimum_supplier_quotes",claim_value:"three quotes",tags:["supplier","quotes","procurement","legacy"],content:"A purchase request above CNY 20,000 requires three supplier quotes before approval. This legacy notice has not completed its scheduled policy review."}
+  {document_id:"KB-SUP-007",title:"Legacy Supplier Quote Requirement",department:"Procurement",updated_at:"2025-01-15",review_due_at:"2025-12-31",claim_key:"procurement.minimum_supplier_quotes",claim_value:"three quotes",tags:["supplier","quotes","procurement","legacy"],content:"A purchase request above CNY 20,000 requires three supplier quotes before approval. This legacy notice has not completed its scheduled policy review."},
+  {document_id:"KB-FUT-008",title:"Future Inventory Safety Stock Policy",department:"Supply Chain",updated_at:"2026-09-01",review_due_at:"2027-01-31",claim_key:"inventory.safety_stock_cover",claim_value:"fourteen days",tags:["inventory","safety stock","future policy"],content:"The future inventory safety stock policy requires fourteen days of cover. Its update date is later than the current analysis date and it must not be treated as current evidence."}
 ];
 
 const analysisDate = "2026-08-14";
@@ -85,7 +86,8 @@ function assessEvidence(hits) {
   hits.forEach(hit => {
     const ageDays = Math.floor((asOf - new Date(`${hit.updated_at}T00:00:00Z`)) / 86400000);
     const reasons = [];
-    if (ageDays > maxSourceAgeDays) reasons.push(`source age ${ageDays} days exceeds limit ${maxSourceAgeDays}`);
+    if (ageDays < 0) reasons.push(`source update date ${hit.updated_at} is later than analysis date ${analysisDate}`);
+    else if (ageDays > maxSourceAgeDays) reasons.push(`source age ${ageDays} days exceeds limit ${maxSourceAgeDays}`);
     if (hit.review_due_at && hit.review_due_at < analysisDate) reasons.push(`review due date ${hit.review_due_at} has passed`);
     if (reasons.length) stale.push({document_id:hit.document_id,reasons});
     if (hit.claim_key && hit.claim_value) {
