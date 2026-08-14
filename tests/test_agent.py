@@ -104,6 +104,136 @@ class KnowledgeAgentTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "ISO-8601"):
             MetadataFilters(updated_after="July 2")
 
+    def test_structured_conflict_stops_answer_composition(self):
+        conflict_documents = [
+            KnowledgeDocument(
+                document_id="KB-C1",
+                title="Travel hotel ceiling policy",
+                department="Finance",
+                updated_at="2026-08-01",
+                review_due_at="2026-12-31",
+                claim_key="travel.hotel_ceiling",
+                claim_value="CNY 500",
+                content="The approved travel hotel ceiling is CNY 500 per night.",
+            ),
+            KnowledgeDocument(
+                document_id="KB-C2",
+                title="Travel hotel ceiling memo",
+                department="Operations",
+                updated_at="2026-08-02",
+                review_due_at="2026-12-31",
+                claim_key="travel.hotel_ceiling",
+                claim_value="CNY 650",
+                content="The approved travel hotel ceiling is CNY 650 per night.",
+            ),
+        ]
+
+        result = KnowledgeAgent(conflict_documents).ask(
+            "What is the approved travel hotel ceiling?",
+            as_of_date="2026-08-14",
+        )
+
+        self.assertEqual(result["status"], "conflicting_evidence")
+        self.assertTrue(result["needs_human_review"])
+        self.assertEqual(result["evidence_assessment"]["conflicts"][0]["claim_key"], "travel.hotel_ceiling")
+        self.assertEqual({item["document_id"] for item in result["citations"]}, {"KB-C1", "KB-C2"})
+        self.assertEqual(result["trace"][-1]["tool"], "evidence_governance_gate")
+
+    def test_stale_source_stops_answer_composition(self):
+        stale_document = KnowledgeDocument(
+            document_id="KB-OLD",
+            title="Supplier quote rule",
+            department="Procurement",
+            updated_at="2025-01-01",
+            review_due_at="2025-12-31",
+            content="A purchase request requires three supplier quotes.",
+        )
+
+        result = KnowledgeAgent([stale_document]).ask(
+            "How many supplier quotes are required?",
+            as_of_date="2026-08-14",
+        )
+
+        self.assertEqual(result["status"], "stale_evidence")
+        self.assertEqual(result["evidence_assessment"]["stale_sources"][0]["document_id"], "KB-OLD")
+        self.assertEqual(result["confidence"]["label"], "not_applicable")
+
+    def test_fresh_consistent_structured_claim_can_answer(self):
+        current_document = KnowledgeDocument(
+            document_id="KB-CURRENT",
+            title="Current return window",
+            department="Support",
+            updated_at="2026-08-01",
+            review_due_at="2026-12-31",
+            claim_key="returns.window",
+            claim_value="seven days",
+            content="The current damaged product return window is seven days.",
+        )
+
+        result = KnowledgeAgent([current_document]).ask(
+            "What is the damaged product return window?",
+            as_of_date="2026-08-14",
+        )
+
+        self.assertEqual(result["status"], "answered")
+        self.assertEqual(result["evidence_assessment"]["state"], "clear")
+
+    def test_claim_metadata_must_be_complete(self):
+        payload = documents()[0].to_dict()
+        payload["claim_key"] = "returns.window"
+        payload["claim_value"] = None
+
+        with self.assertRaisesRegex(ValueError, "provided together"):
+            KnowledgeDocument.from_mapping(payload)
+
+    def test_governance_dates_must_be_iso_8601(self):
+        payload = documents()[0].to_dict()
+        payload["review_due_at"] = "end of year"
+
+        with self.assertRaisesRegex(ValueError, "ISO-8601"):
+            KnowledgeDocument.from_mapping(payload)
+
+    def test_weak_unrelated_stale_hit_does_not_override_strong_current_evidence(self):
+        current = KnowledgeDocument(
+            document_id="KB-STRONG",
+            title="Damaged product return evidence policy",
+            department="Support",
+            updated_at="2026-08-01",
+            content="A damaged product return requires an order number and clear photo evidence.",
+        )
+        weak_stale = KnowledgeDocument(
+            document_id="KB-WEAK",
+            title="Legacy policy archive",
+            department="Archive",
+            updated_at="2024-01-01",
+            content="This policy archive lists office forms.",
+        )
+
+        result = KnowledgeAgent([current, weak_stale]).ask(
+            "What evidence is required by the damaged product return policy?",
+            as_of_date="2026-08-14",
+        )
+
+        self.assertEqual(result["status"], "answered")
+        self.assertEqual(result["evidence_assessment"]["assessed_document_ids"], ["KB-STRONG"])
+
+    def test_future_dated_source_requires_review(self):
+        future_document = KnowledgeDocument(
+            document_id="KB-FUTURE",
+            title="Future inventory policy",
+            department="Supply Chain",
+            updated_at="2026-09-01",
+            content="The inventory safety stock policy requires fourteen days of cover.",
+        )
+
+        result = KnowledgeAgent([future_document]).ask(
+            "What does the inventory safety stock policy require?",
+            as_of_date="2026-08-14",
+        )
+
+        self.assertEqual(result["status"], "stale_evidence")
+        self.assertEqual(result["evidence_assessment"]["future_dated_document_ids"], ["KB-FUTURE"])
+
 
 if __name__ == "__main__":
     unittest.main()

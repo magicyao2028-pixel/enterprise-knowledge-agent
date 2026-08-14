@@ -45,7 +45,7 @@ def evaluate_queries(
     blocked_correct = 0
 
     for case in cases:
-        response = agent.ask(case["query"])
+        response = agent.ask(case["query"], as_of_date="2026-08-14")
         expected_status = case["expected_status"]
         actual_status = str(response["status"])
         status_matches = actual_status == expected_status
@@ -85,6 +85,7 @@ def evaluate_queries(
     passed_cases = sum(1 for item in results if item["passed"])
     return {
         "fixture_type": "synthetic reviewed query set",
+        "as_of_date": "2026-08-14",
         "summary": {
             "case_count": len(results),
             "passed_cases": passed_cases,

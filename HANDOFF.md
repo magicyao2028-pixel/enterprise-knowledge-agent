@@ -2,9 +2,9 @@
 
 ## Current state
 
-- Release stage: v0.3 product-validation prototype.
-- Maintenance completed: M2/10.
-- Core flow: validated corpus → query safety → metadata filter → stable chunking → lexical retrieval → evidence gate → chunk-cited answer or abstention.
+- Release stage: v0.4 product-validation prototype.
+- Maintenance completed: M3/10.
+- Core flow: validated corpus → query safety → metadata filter → stable chunking → lexical retrieval → freshness/conflict assessment → chunk-cited answer or governed abstention.
 - Public data: synthetic only.
 - Runtime cost: zero paid API dependency.
 
@@ -18,7 +18,7 @@ PYTHONPATH=src python -m enterprise_knowledge_agent.evaluation_cli
 
 ## Next maintenance round
 
-M3 should add conflicting-source and freshness handling. It should surface ambiguity and stale evidence rather than adding a vector database yet.
+M4 should add an optional local embedding adapter and compare it with the current lexical baseline. Keep lexical retrieval available, use no paid API and report fixture limitations.
 
 ## Known limitations
 
@@ -27,6 +27,8 @@ M3 should add conflicting-source and freshness handling. It should surface ambig
 - small synthetic corpus;
 - perfect fixture scores do not estimate production retrieval accuracy;
 - extractive answer composition;
+- conflict detection depends on curated `claim_key` and `claim_value` metadata;
+- freshness thresholds identify review risk rather than policy validity;
 - heuristic confidence is not calibrated;
 - browser and Python implementations are mirrored manually;
 - no authentication, permissions, persistence, API or real user study.

@@ -3,7 +3,7 @@
 [![CI](https://github.com/magicyao2028-pixel/enterprise-knowledge-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/magicyao2028-pixel/enterprise-knowledge-agent/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-> 中文介绍：这是一个面向中小企业知识管理场景的离线 Agent 原型。它从经过批准的内部知识样例中检索证据，生成带来源引用的回答；当证据不足或问题涉及密钥、密码等敏感信息时主动拒答并转交人工。公开版本仅使用合成知识内容，不包含任何真实公司内部资料。
+> 中文介绍：这是一个面向中小企业知识管理场景的离线 Agent 原型。它从经过批准的内部知识样例中检索证据，生成带来源引用的回答；当证据不足、来源过期、结构化政策值冲突，或问题涉及密钥与密码时主动拒答并转交人工。公开版本仅使用合成知识内容，不包含任何真实公司内部资料。
 
 **Live prototype:** https://magicyao2028-pixel.github.io/enterprise-knowledge-agent/
 
@@ -18,6 +18,8 @@ Policies, operating procedures and product knowledge are often scattered across 
 - searches an approved local corpus;
 - splits documents into stable, reviewable chunks before ranking;
 - filters retrieval by department, tag and minimum update date;
+- checks materially relevant sources for age and explicit review deadlines against a visible analysis date;
+- detects different values for the same structured policy key and routes the ambiguity to a knowledge owner;
 - returns an extractive answer with visible citations;
 - exposes retrieval scores and an execution trace;
 - abstains when no source supports an answer;
@@ -35,6 +37,7 @@ Policies, operating procedures and product knowledge are often scattered across 
 | Evaluation thinking | [Evaluation plan](docs/EVALUATION.md) and automated test cases |
 | Reproducible retrieval evidence | [Twelve-query baseline](reports/retrieval_evaluation.md) covering ranking, abstention and blocking |
 | Controlled search scope | Stable chunk IDs plus department, tag and freshness filters |
+| Knowledge governance | Explicit freshness report and structured conflicting-source gate |
 | System planning | [Architecture](docs/ARCHITECTURE.md) with explicit v0.1 boundaries |
 | Runnable proof | Python CLI, synthetic corpus and zero-cost [browser prototype](site/) |
 
@@ -45,8 +48,10 @@ flowchart LR
     Q[Employee question] --> V[Query and policy validation]
     V --> R[Local document retrieval]
     R --> E{Enough evidence?}
-    E -->|Yes| A[Extractive answer with citations]
     E -->|No| H[Abstain and request human review]
+    E -->|Yes| G{Fresh and consistent?}
+    G -->|Yes| A[Extractive answer with citations]
+    G -->|No| H
     A --> H2[Human verifies before action]
 ```
 
@@ -61,6 +66,8 @@ python -m pip install -e .
 knowledge-agent "How quickly should an urgent complaint be escalated?"
 knowledge-agent "What evidence is required for a damaged product return?" --output answer.json
 knowledge-agent "How should a complaint be escalated?" --department "Customer Operations" --tag complaint --updated-after 2026-07-01
+knowledge-agent "What is the domestic travel hotel reimbursement ceiling?" --corpus data/governance_fixture.json --as-of 2026-08-14
+knowledge-agent "How many supplier quotes are required?" --corpus data/governance_fixture.json --as-of 2026-08-14 --max-source-age-days 90
 python -m unittest discover -s tests -v
 ```
 
@@ -88,6 +95,9 @@ The public sample is a JSON array using this shape:
   "title": "Customer Complaint Escalation Standard",
   "department": "Customer Operations",
   "updated_at": "2026-07-20",
+  "review_due_at": "2026-12-31",
+  "claim_key": "complaints.urgent_escalation_deadline",
+  "claim_value": "30 minutes",
   "tags": ["complaint", "escalation"],
   "content": "Synthetic policy text"
 }
@@ -99,6 +109,8 @@ The public sample is a JSON array using this shape:
 - Retrieval is English lexical matching, not embeddings or semantic search.
 - Metadata filters are exact matches; they are not an authorization system.
 - Answers are selected excerpts, not model-generated reasoning.
+- Conflict detection requires an identical structured `claim_key`; it does not infer contradiction from free text.
+- Freshness rules identify review risk, not whether a policy is legally or operationally valid.
 - There is no authentication, tenant isolation, database, document ingestion pipeline or production deployment.
 - Confidence is a transparent heuristic, not a calibrated probability.
 - All operational decisions still require an authorized human.
@@ -120,9 +132,10 @@ These boundaries leave testable room for later maintenance instead of presenting
 
 - v0.1: offline retrieval, citations, abstention, tests and static demo;
 - v0.2: evaluated query set and retrieval-quality report;
-- v0.3: document chunking and metadata filters (current);
-- v0.4: optional local embedding adapter and comparison benchmark;
-- v0.5: service API, persistence and access-control design;
+- v0.3: document chunking and metadata filters;
+- v0.4: source freshness and structured conflicting-policy gates (current);
+- v0.5: optional local embedding adapter and lexical comparison benchmark;
+- v0.6: service API, persistence and access-control design;
 - v1.0: controlled private pilot with knowledge-owner review.
 
 ## License

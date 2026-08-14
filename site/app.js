@@ -2,8 +2,14 @@ const documents = [
   {document_id:"KB-RET-001",title:"Damaged Product Return Procedure",department:"Customer Operations",updated_at:"2026-07-15",tags:["return","damaged product","refund","evidence"],content:"A damaged-product request should be submitted within seven calendar days after delivery. The customer should provide the order number and a clear photo or video showing the damage. A customer-service lead may approve a refund or replacement after the evidence is reviewed. Food-safety complaints must be escalated immediately and should not wait for the standard review queue."},
   {document_id:"KB-SVC-002",title:"Customer Complaint Escalation Standard",department:"Customer Operations",updated_at:"2026-07-20",tags:["complaint","escalation","response time","service"],content:"Urgent complaints involving safety, suspected fraud, a public-platform escalation, or repeated service failure must be assigned to the duty manager within 30 minutes. Other unresolved complaints should be escalated after two unsuccessful handling attempts. The case record must preserve the customer request, evidence, actions taken, owner, and next response deadline."},
   {document_id:"KB-INV-003",title:"Inventory Replenishment Review",department:"Supply Chain",updated_at:"2026-07-10",tags:["inventory","replenishment","stock","supplier"],content:"A replenishment proposal requires current available stock, average daily sales, supplier lead time, minimum order quantity, and promotion plans. Orders above the approved monthly purchase budget require the business owner's approval. A recommendation is advisory until a supply-chain owner confirms the forecast and supplier terms."},
-  {document_id:"KB-CNT-004",title:"AIGC Content Review Checklist",department:"Content Operations",updated_at:"2026-07-28",tags:["aigc","content","brand","copyright","review"],content:"AI-generated public content must be checked for product accuracy, brand consistency, prohibited claims, copyright risk, personal information, and platform rules before publication. The reviewer should retain the source brief, generated version, final approved asset, and approval record. Publication remains a human decision."}
+  {document_id:"KB-CNT-004",title:"AIGC Content Review Checklist",department:"Content Operations",updated_at:"2026-07-28",tags:["aigc","content","brand","copyright","review"],content:"AI-generated public content must be checked for product accuracy, brand consistency, prohibited claims, copyright risk, personal information, and platform rules before publication. The reviewer should retain the source brief, generated version, final approved asset, and approval record. Publication remains a human decision."},
+  {document_id:"KB-TRV-005",title:"Domestic Travel Reimbursement Policy",department:"Finance",updated_at:"2026-08-01",review_due_at:"2026-12-31",claim_key:"travel.domestic_hotel_ceiling",claim_value:"CNY 500 per night",tags:["travel","hotel","reimbursement","policy"],content:"The domestic business-travel hotel reimbursement ceiling is CNY 500 per night. Exceptions require written finance approval before booking."},
+  {document_id:"KB-TRV-006",title:"Regional Travel Reimbursement Memo",department:"Regional Operations",updated_at:"2026-08-05",review_due_at:"2026-12-31",claim_key:"travel.domestic_hotel_ceiling",claim_value:"CNY 650 per night",tags:["travel","hotel","reimbursement","memo"],content:"The domestic business-travel hotel reimbursement ceiling is CNY 650 per night for regional teams. The memo does not identify whether it supersedes the finance policy."},
+  {document_id:"KB-SUP-007",title:"Legacy Supplier Quote Requirement",department:"Procurement",updated_at:"2025-01-15",review_due_at:"2025-12-31",claim_key:"procurement.minimum_supplier_quotes",claim_value:"three quotes",tags:["supplier","quotes","procurement","legacy"],content:"A purchase request above CNY 20,000 requires three supplier quotes before approval. This legacy notice has not completed its scheduled policy review."}
 ];
+
+const analysisDate = "2026-08-14";
+const maxSourceAgeDays = 90;
 
 const stopWords = new Set(["a","an","and","are","as","at","be","by","can","do","for","from","how","i","in","is","it","of","on","or","our","should","the","to","what","when","where","which","with"]);
 const sensitiveTerms = ["api key","bank account","credential","password","private key","secret token"];
@@ -72,6 +78,30 @@ function retrieve(query, department = "") {
   return [...best.values()].sort((a,b) => b.score - a.score || a.document_id.localeCompare(b.document_id)).slice(0,3);
 }
 
+function assessEvidence(hits) {
+  const asOf = new Date(`${analysisDate}T00:00:00Z`);
+  const stale = [];
+  const claims = new Map();
+  hits.forEach(hit => {
+    const ageDays = Math.floor((asOf - new Date(`${hit.updated_at}T00:00:00Z`)) / 86400000);
+    const reasons = [];
+    if (ageDays > maxSourceAgeDays) reasons.push(`source age ${ageDays} days exceeds limit ${maxSourceAgeDays}`);
+    if (hit.review_due_at && hit.review_due_at < analysisDate) reasons.push(`review due date ${hit.review_due_at} has passed`);
+    if (reasons.length) stale.push({document_id:hit.document_id,reasons});
+    if (hit.claim_key && hit.claim_value) {
+      if (!claims.has(hit.claim_key)) claims.set(hit.claim_key,new Map());
+      const values = claims.get(hit.claim_key);
+      if (!values.has(hit.claim_value)) values.set(hit.claim_value,[]);
+      values.get(hit.claim_value).push(hit.document_id);
+    }
+  });
+  const conflicts = [...claims.entries()].filter(([,values]) => values.size > 1).map(([claim_key,values]) => ({
+    claim_key,
+    variants:[...values.entries()].map(([claim_value,document_ids]) => ({claim_value,document_ids}))
+  }));
+  return {state:conflicts.length ? "conflicting" : stale.length ? "stale" : "clear",stale,conflicts};
+}
+
 function ask(query, department = "") {
   const trace = [{tool:"validate_query",purpose:"Check query shape and policy boundaries.",status:"completed"}];
   if (sensitiveTerms.some(term => query.toLowerCase().includes(term))) {
@@ -84,13 +114,25 @@ function ask(query, department = "") {
     trace.push({tool:"evidence_gate",purpose:"Abstain because no source supports an answer.",status:"no evidence"});
     return {status:"no evidence",answer:"I could not find enough evidence in the approved knowledge corpus. Please ask a knowledge owner.",confidence:{label:"none",score:0},review:true,hits,trace};
   }
+  const governanceHits = hits.filter(hit => hit.score >= hits[0].score * .6);
+  const governance = assessEvidence(governanceHits);
+  trace.push({tool:"assess_source_governance",purpose:"Check materially relevant sources for age, review dates and structured claim conflicts.",status:"completed"});
+  if (governance.state !== "clear") {
+    const conflict = governance.state === "conflicting";
+    trace.push({tool:"evidence_governance_gate",purpose:"Stop composition and route unresolved evidence to a knowledge owner.",status:conflict ? "conflicting evidence" : "stale evidence"});
+    return {
+      status:conflict ? "conflicting evidence" : "stale evidence",
+      answer:conflict ? "The approved corpus contains conflicting structured policy values. A knowledge owner must resolve the source of truth." : "The supporting evidence is stale for this analysis date. A knowledge owner must verify the current policy.",
+      confidence:{label:"not applicable",score:0},review:true,hits,trace,governance
+    };
+  }
   const queryTerms = queryTermsFor(query);
   const coverage = hits[0].matched.length / Math.max(1,queryTerms.size);
   const score = Math.min(1,.45 + coverage * .45 + Math.min(hits[0].score,10) / 100);
   const label = score >= .8 ? "high" : score >= .6 ? "medium" : "low";
   trace.push({tool:"evaluate_evidence",purpose:"Estimate lexical coverage and keep uncertainty visible.",status:"completed"});
   trace.push({tool:"compose_grounded_answer",purpose:"Compose only from retrieved excerpts and attach citations.",status:"completed"});
-  return {status:"answered",answer:hits.slice(0,2).map(hit => `${hit.excerpt} [${hit.chunk_id}]`).join(" "),confidence:{label,score:Number(score.toFixed(2))},review:label === "low",hits,trace};
+  return {status:"answered",answer:hits.slice(0,2).map(hit => `${hit.excerpt} [${hit.chunk_id}]`).join(" "),confidence:{label,score:Number(score.toFixed(2))},review:label === "low",hits,trace,governance};
 }
 
 function render(result) {
@@ -98,14 +140,14 @@ function render(result) {
   document.getElementById("answer-status").textContent = result.status;
   document.getElementById("answer-text").textContent = result.answer;
   document.getElementById("confidence").textContent = `${result.confidence.label} · ${result.confidence.score.toFixed(2)}`;
-  document.getElementById("review-note").textContent = result.review ? "Human review required: the request was blocked, unsupported, or low-confidence." : "Human verification remains required before operational action.";
+  document.getElementById("review-note").textContent = result.review ? "Human review required: the request was blocked, unsupported, stale, conflicting, or low-confidence." : `Freshness check clear as of ${analysisDate}; human verification remains required.`;
   document.getElementById("evidence-count").textContent = `${result.hits.length} source${result.hits.length === 1 ? "" : "s"}`;
   document.getElementById("evidence-list").innerHTML = result.hits.length ? result.hits.map(hit => `
     <article class="evidence-card">
       <div class="source">${escapeHtml(hit.chunk_id)} · ${escapeHtml(hit.department)}</div>
       <h3>${escapeHtml(hit.title)}</h3>
       <p>${escapeHtml(hit.excerpt)}</p>
-      <small>Updated ${escapeHtml(hit.updated_at)}</small>
+      <small>Updated ${escapeHtml(hit.updated_at)}${hit.review_due_at ? ` · Review due ${escapeHtml(hit.review_due_at)}` : ""}</small>
       <div class="match-row"><span>Matched: ${escapeHtml(hit.matched.join(", "))}</span><span>Score ${hit.score.toFixed(2)}</span></div>
     </article>`).join("") : '<div class="empty">No approved source supported this request.</div>';
   document.getElementById("trace-list").innerHTML = result.trace.map(step => `<li class="${step.status === "blocked" ? "blocked" : ""}"><strong>${escapeHtml(step.tool)}</strong> — ${escapeHtml(step.purpose)} <small>(${escapeHtml(step.status)})</small></li>`).join("");

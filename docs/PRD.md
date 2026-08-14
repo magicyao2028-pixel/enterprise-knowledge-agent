@@ -5,7 +5,7 @@
 | Field | Value |
 | --- | --- |
 | Product | Enterprise Knowledge Agent |
-| Version | 0.3 |
+| Version | 0.4 |
 | Status | Product-validation MVP |
 | Primary user | Employee in a small or medium-sized business |
 | Public data policy | Synthetic documents only |
@@ -49,6 +49,8 @@ This hypothesis has not been validated with real users. v0.1 tests technical beh
 8. Preserve an Agent execution trace.
 9. Split documents into stable chunks before ranking.
 10. Filter retrieval by exact department, tag and minimum update date.
+11. Mark retrieved evidence stale using an explicit analysis date, source age and review deadline.
+12. Detect different values attached to the same structured policy key and stop answer composition.
 
 ### Out of scope
 
@@ -72,6 +74,8 @@ This hypothesis has not been validated with real users. v0.1 tests technical beh
 | FR-07 | Export JSON | Should | CLI writes a structured answer when `--output` is supplied. |
 | FR-08 | Filter metadata | Should | CLI and Python callers can restrict search by exact department, tag and update date. |
 | FR-09 | Cite chunks | Should | Every answered response identifies the stable chunk used as evidence. |
+| FR-10 | Check freshness | Must | Stale or future-dated supporting evidence is surfaced and routed to human review. |
+| FR-11 | Surface conflicts | Must | Different values for the same structured claim key produce a conflict response with all source IDs. |
 
 ## 7. Success metrics for a future pilot
 
@@ -84,4 +88,4 @@ This hypothesis has not been validated with real users. v0.1 tests technical beh
 
 ## 8. Release gate
 
-Do not claim time savings, accuracy improvement, production use or employee adoption until a controlled private pilot establishes baseline and post-use evidence.
+Do not claim time savings, accuracy improvement, production use or employee adoption until a controlled private pilot establishes baseline and post-use evidence. Structured conflict detection must not be described as general free-text contradiction detection.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0 - 2026-08-14
+
+- added explicit source-age, review-deadline and future-date assessment;
+- added structured `claim_key` and `claim_value` conflict detection without claiming free-text contradiction inference;
+- stopped answer composition when retrieved evidence is stale or conflicting while preserving all source citations;
+- added a separate synthetic governance fixture, CLI controls and browser examples;
+- added regression tests for conflict, stale, fresh and invalid-metadata paths while preserving the 12/12 retrieval baseline.
+
 ## 0.3.0 - 2026-08-04
 
 - added deterministic sentence-aware document chunking with stable chunk identifiers;

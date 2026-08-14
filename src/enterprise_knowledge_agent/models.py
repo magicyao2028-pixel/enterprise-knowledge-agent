@@ -13,6 +13,9 @@ class KnowledgeDocument:
     updated_at: str
     content: str
     tags: tuple[str, ...] = ()
+    claim_key: str | None = None
+    claim_value: str | None = None
+    review_due_at: str | None = None
 
     @classmethod
     def from_mapping(cls, value: dict[str, Any]) -> "KnowledgeDocument":
@@ -32,9 +35,20 @@ class KnowledgeDocument:
             updated_at=str(value["updated_at"]).strip(),
             content=str(value["content"]).strip(),
             tags=tuple(item.strip() for item in tags if item.strip()),
+            claim_key=str(value["claim_key"]).strip() if value.get("claim_key") else None,
+            claim_value=str(value["claim_value"]).strip() if value.get("claim_value") else None,
+            review_due_at=str(value["review_due_at"]).strip() if value.get("review_due_at") else None,
         )
         if not all((document.document_id, document.title, document.department, document.updated_at, document.content)):
             raise ValueError("Document fields must not be blank")
+        try:
+            date.fromisoformat(document.updated_at)
+            if document.review_due_at:
+                date.fromisoformat(document.review_due_at)
+        except ValueError as exc:
+            raise ValueError("updated_at and review_due_at must be ISO-8601 dates") from exc
+        if bool(document.claim_key) != bool(document.claim_value):
+            raise ValueError("claim_key and claim_value must be provided together")
         return document
 
     def to_dict(self) -> dict[str, Any]:
@@ -98,6 +112,9 @@ class SearchHit:
             "title": self.document.title,
             "department": self.document.department,
             "updated_at": self.document.updated_at,
+            "claim_key": self.document.claim_key,
+            "claim_value": self.document.claim_value,
+            "review_due_at": self.document.review_due_at,
             "score": self.score,
             "matched_terms": list(self.matched_terms),
             "excerpt": self.excerpt,

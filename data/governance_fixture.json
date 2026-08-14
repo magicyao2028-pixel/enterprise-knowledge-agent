@@ -1,0 +1,35 @@
+[
+  {
+    "document_id": "KB-TRV-005",
+    "title": "Domestic Travel Reimbursement Policy",
+    "department": "Finance",
+    "updated_at": "2026-08-01",
+    "review_due_at": "2026-12-31",
+    "claim_key": "travel.domestic_hotel_ceiling",
+    "claim_value": "CNY 500 per night",
+    "tags": ["travel", "hotel", "reimbursement", "policy"],
+    "content": "The domestic business-travel hotel reimbursement ceiling is CNY 500 per night. Exceptions require written finance approval before booking."
+  },
+  {
+    "document_id": "KB-TRV-006",
+    "title": "Regional Travel Reimbursement Memo",
+    "department": "Regional Operations",
+    "updated_at": "2026-08-05",
+    "review_due_at": "2026-12-31",
+    "claim_key": "travel.domestic_hotel_ceiling",
+    "claim_value": "CNY 650 per night",
+    "tags": ["travel", "hotel", "reimbursement", "memo"],
+    "content": "The domestic business-travel hotel reimbursement ceiling is CNY 650 per night for regional teams. The memo does not identify whether it supersedes the finance policy."
+  },
+  {
+    "document_id": "KB-SUP-007",
+    "title": "Legacy Supplier Quote Requirement",
+    "department": "Procurement",
+    "updated_at": "2025-01-15",
+    "review_due_at": "2025-12-31",
+    "claim_key": "procurement.minimum_supplier_quotes",
+    "claim_value": "three quotes",
+    "tags": ["supplier", "quotes", "procurement", "legacy"],
+    "content": "A purchase request above CNY 20,000 requires three supplier quotes before approval. This legacy notice has not completed its scheduled policy review."
+  }
+]

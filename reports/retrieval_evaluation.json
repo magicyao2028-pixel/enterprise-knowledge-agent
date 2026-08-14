@@ -1,5 +1,6 @@
 {
   "fixture_type": "synthetic reviewed query set",
+  "as_of_date": "2026-08-14",
   "summary": {
     "case_count": 12,
     "passed_cases": 12,

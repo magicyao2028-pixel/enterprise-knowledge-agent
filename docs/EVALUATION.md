@@ -16,6 +16,9 @@ Determine whether the Agent retrieves the right approved source, cites it correc
 - answered responses always contain citations;
 - unsupported responses contain no invented citation;
 - sensitive requests are blocked before retrieval.
+- stale and future-dated sources stop answer composition;
+- different values under the same structured claim key expose every conflicting source;
+- fresh consistent claims preserve the normal cited-answer path.
 
 ### 2. Retrieval quality
 
@@ -75,7 +78,7 @@ The 2026-08-03 baseline includes eight answerable questions, three unsupported q
 
 The corpus and questions are synthetic and small. These numbers are regression evidence for the public fixture, not a production accuracy claim.
 
-The v0.3 maintenance run keeps the same 12/12 baseline after chunking. Filter behavior is covered separately because the original query set intentionally runs without a department or tag restriction.
+The v0.4 maintenance run keeps the same 12/12 retrieval baseline at the fixed analysis date `2026-08-14`. Governance behavior is covered separately with deterministic tests and `data/governance_fixture.json`, so conflict and stale examples do not distort the original retrieval fixture.
 
 ## v1.0 gate
 

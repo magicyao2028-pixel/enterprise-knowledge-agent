@@ -17,6 +17,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--department", action="append", default=[], help="Filter by department; may be repeated")
     parser.add_argument("--tag", action="append", default=[], help="Filter by tag; may be repeated")
     parser.add_argument("--updated-after", help="Filter to documents updated on or after this ISO-8601 date")
+    parser.add_argument("--as-of", dest="as_of_date", help="Analysis date for freshness checks; defaults to today")
+    parser.add_argument("--max-source-age-days", type=int, default=90, help="Maximum accepted source age")
     parser.add_argument("--output", type=Path, help="Optional path for the JSON answer")
     return parser.parse_args()
 
@@ -24,7 +26,12 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     filters = MetadataFilters(tuple(args.department), tuple(args.tag), args.updated_after)
-    answer = KnowledgeAgent(load_documents(args.corpus), top_k=args.top_k).ask(args.query, filters)
+    answer = KnowledgeAgent(load_documents(args.corpus), top_k=args.top_k).ask(
+        args.query,
+        filters,
+        as_of_date=args.as_of_date,
+        max_source_age_days=args.max_source_age_days,
+    )
     rendered = json.dumps(answer, ensure_ascii=False, indent=2)
     if args.output:
         args.output.write_text(rendered + "\n", encoding="utf-8")

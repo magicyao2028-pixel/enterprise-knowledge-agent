@@ -22,6 +22,7 @@ flowchart TB
       F[Metadata filter]
       K[Stable chunker]
       R[Lexical chunk retriever]
+      T[Freshness and conflict assessor]
       G[Evidence gate]
       C[Grounded composer]
     end
@@ -34,7 +35,7 @@ flowchart TB
     V --> S --> F --> K --> R
     J --> F
     M --> F
-    R --> G
+    R --> T --> G
     G -->|Supported| C
     G -->|Unsupported| H[Human review]
 ```
@@ -48,6 +49,7 @@ The browser prototype mirrors the main decision flow for a zero-setup demonstrat
 | `models.py` | Validate knowledge documents, metadata filters, chunks and response evidence objects. |
 | `corpus.py` | Load JSON, reject malformed content and duplicate identifiers. |
 | `retrieval.py` | Split stable chunks, apply metadata scope, score and rank supporting excerpts. |
+| `governance.py` | Check source age, review deadlines and structured claim-value conflicts. |
 | `agent.py` | Orchestrate safety, evidence, confidence, citations and abstention. |
 | `cli.py` | Provide local query and JSON-export interfaces. |
 | `site/` | Show the product flow without a server or paid API. |
@@ -66,4 +68,4 @@ flowchart LR
     API --> OBS[Logs, metrics and traces]
 ```
 
-Production decisions still required include tenant isolation, permissions, encryption, retention, document versioning, conflicting-source handling, model budget, observability, incident response and deletion workflows.
+The v0.4 conflict gate compares values only when documents share the same explicit `claim_key`; it does not infer semantic contradiction. Production decisions still required include tenant isolation, permissions, encryption, retention, source-of-truth ownership, model budget, observability, incident response and deletion workflows.

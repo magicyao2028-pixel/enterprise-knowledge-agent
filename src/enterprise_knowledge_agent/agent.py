@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import date
 from typing import Iterable
 
-from .models import KnowledgeDocument, MetadataFilters
+from .governance import assess_evidence
+from .models import KnowledgeDocument, MetadataFilters, SearchHit
 from .retrieval import expand_query_terms, search_documents
 
 
@@ -31,7 +33,14 @@ class KnowledgeAgent:
             raise ValueError("top_k must be at least 1")
         self.top_k = top_k
 
-    def ask(self, query: str, filters: MetadataFilters | None = None) -> dict[str, object]:
+    def ask(
+        self,
+        query: str,
+        filters: MetadataFilters | None = None,
+        *,
+        as_of_date: str | None = None,
+        max_source_age_days: int = 90,
+    ) -> dict[str, object]:
         cleaned_query = query.strip()
         if not cleaned_query:
             raise ValueError("Query must not be blank")
@@ -49,6 +58,25 @@ class KnowledgeAgent:
         if not hits:
             trace.record("evidence_gate", "Abstain because no source supports an answer.", "no_evidence")
             return self._no_evidence_response(cleaned_query, trace.steps, applied_filters)
+
+        governance_hits = [hit for hit in hits if hit.score >= hits[0].score * 0.6]
+        assessment = assess_evidence(
+            governance_hits,
+            as_of_date=as_of_date or date.today().isoformat(),
+            max_source_age_days=max_source_age_days,
+        )
+        trace.record("assess_source_governance", "Check materially relevant sources for age, review dates and structured claim conflicts.")
+        if assessment["state"] != "clear":
+            status = "conflicting_evidence" if assessment["state"] == "conflicting" else "stale_evidence"
+            trace.record("evidence_governance_gate", "Stop composition and route unresolved evidence to a knowledge owner.", status)
+            return self._governance_review_response(
+                cleaned_query,
+                status,
+                hits,
+                assessment,
+                trace.steps,
+                applied_filters,
+            )
 
         query_terms = expand_query_terms(cleaned_query)
         matched_terms = set(hits[0].matched_terms)
@@ -80,12 +108,50 @@ class KnowledgeAgent:
             "citations": citations,
             "retrieved": [hit.to_dict() for hit in hits],
             "filters_applied": applied_filters.to_dict(),
+            "evidence_assessment": assessment,
             "trace": trace.steps,
             "limitations": [
                 "Retrieval is English lexical chunk matching, not semantic search.",
                 "The answer is extractive and may not resolve ambiguous policy questions.",
-                "Source freshness and access permissions require production controls.",
+                "Freshness uses explicit dates and a configurable age limit; it does not prove policy validity.",
+                "Free-text contradiction is not inferred without structured claim metadata.",
+                "Access permissions require production controls.",
             ],
+        }
+
+    @staticmethod
+    def _governance_review_response(
+        query: str,
+        status: str,
+        hits: list[SearchHit],
+        assessment: dict[str, object],
+        trace: list[dict[str, str]],
+        filters: MetadataFilters,
+    ) -> dict[str, object]:
+        if status == "conflicting_evidence":
+            answer = "The approved corpus contains conflicting structured policy values. A knowledge owner must resolve the source of truth."
+        else:
+            answer = "The supporting evidence is stale or future-dated for this analysis date. A knowledge owner must verify the current policy."
+        return {
+            "query": query,
+            "status": status,
+            "answer": answer,
+            "confidence": {"label": "not_applicable", "score": 0.0},
+            "needs_human_review": True,
+            "citations": [
+                {
+                    "document_id": hit.document.document_id,
+                    "chunk_id": hit.chunk_id,
+                    "title": hit.document.title,
+                    "department": hit.document.department,
+                    "updated_at": hit.document.updated_at,
+                }
+                for hit in hits
+            ],
+            "retrieved": [hit.to_dict() for hit in hits],
+            "filters_applied": filters.to_dict(),
+            "evidence_assessment": assessment,
+            "trace": trace,
         }
 
     @staticmethod

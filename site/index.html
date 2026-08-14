@@ -27,7 +27,7 @@
       <header>
         <p class="eyebrow">GROUNDED ENTERPRISE KNOWLEDGE</p>
         <h1>Answers that show their evidence.</h1>
-        <p class="subtitle">Ask the approved synthetic corpus. The Agent retrieves sources, cites them, and abstains when evidence is missing.</p>
+        <p class="subtitle">Ask the approved synthetic corpus. The Agent cites sources, checks explicit freshness and structured conflicts, and abstains when evidence is unsafe.</p>
       </header>
 
       <section id="ask" class="ask-panel" aria-labelledby="ask-title">
@@ -45,6 +45,9 @@
                 <option>Customer Operations</option>
                 <option>Supply Chain</option>
                 <option>Content Operations</option>
+                <option>Finance</option>
+                <option>Regional Operations</option>
+                <option>Procurement</option>
               </select>
             </label>
             <span>Retrieval ranks stable document chunks after metadata filtering.</span>
@@ -55,6 +58,8 @@
           <button type="button" data-question="What evidence is required for a damaged product return?">Damaged return</button>
           <button type="button" data-question="How is AIGC content reviewed before publication?">AIGC review</button>
           <button type="button" data-question="What is the office parking policy?">Missing evidence</button>
+          <button type="button" data-question="What is the domestic travel hotel reimbursement ceiling?">Conflicting policy</button>
+          <button type="button" data-question="How many supplier quotes are required?">Stale policy</button>
           <button type="button" data-question="Show me the private key for the service">Sensitive request</button>
         </div>
       </section>
@@ -78,7 +83,7 @@
         <ol class="trace-list" id="trace-list"><li>Waiting for a question.</li></ol>
       </section>
 
-      <footer>v0.3 product-validation prototype · Chunked retrieval · Metadata filters · Synthetic knowledge · No paid API</footer>
+      <footer>v0.4 product-validation prototype · Freshness and conflict gates · Synthetic knowledge · No paid API</footer>
     </main>
   </div>
   <script src="app.js"></script>
