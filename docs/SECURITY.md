@@ -4,7 +4,7 @@
 
 - synthetic documents only;
 - no model API or external request;
-- conservative pre-retrieval block for common credential and secret requests, including space, hyphen, underscore and plural variants;
+- conservative pre-retrieval block for common password, credential, key, client-secret and authentication-token requests, including space, dot, slash, hyphen, underscore and plural variants;
 - evidence-free questions produce abstention rather than a fabricated answer;
 - stale, future-dated or structurally conflicting evidence stops answer composition;
 - all operational use requires human review.
@@ -17,6 +17,7 @@
 - semantic conflicts without structured claim metadata, and unauthorized policy versions;
 - personal information detection and retention;
 - account takeover, service abuse and denial of service.
+- novel secret labels, obfuscation and semantic exfiltration beyond the explicit pre-retrieval patterns; this prototype is not a complete data-loss-prevention system.
 
 ## Required controls before a private pilot
 

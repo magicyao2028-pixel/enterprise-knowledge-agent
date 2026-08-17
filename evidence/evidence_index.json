@@ -56,7 +56,7 @@
     },
     {
       "claim_id": "KNOW-FEEDBACK-001",
-      "statement": "A synthetic punctuation-bypass report is linked to a normalized secret boundary and regression test.",
+      "statement": "A synthetic common-credential bypass report is linked to a normalized sensitive-request boundary and regression tests.",
       "artifacts": [
         {"kind": "feedback", "path": "evidence/feedback_case.json"},
         {"kind": "implementation", "path": "src/enterprise_knowledge_agent/agent.py"},

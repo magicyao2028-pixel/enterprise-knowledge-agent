@@ -10,13 +10,29 @@ from .models import KnowledgeDocument, MetadataFilters, SearchHit
 from .retrieval import expand_query_terms, search_documents
 
 
+SENSITIVE_SEPARATOR = r"[\s._/-]*"
 SENSITIVE_PATTERNS = (
-    ("api key", re.compile(r"\bapi[\s_-]*keys?\b", re.IGNORECASE)),
-    ("bank account", re.compile(r"\bbank[\s_-]*accounts?\b", re.IGNORECASE)),
+    ("api key", re.compile(rf"\bapi{SENSITIVE_SEPARATOR}keys?\b", re.IGNORECASE)),
+    ("api secret", re.compile(rf"\bapi{SENSITIVE_SEPARATOR}secrets?\b", re.IGNORECASE)),
+    ("access key", re.compile(rf"\baccess{SENSITIVE_SEPARATOR}keys?\b", re.IGNORECASE)),
+    ("client secret", re.compile(rf"\bclient{SENSITIVE_SEPARATOR}secrets?\b", re.IGNORECASE)),
+    ("secret", re.compile(r"\bsecrets?\b", re.IGNORECASE)),
+    ("access token", re.compile(rf"\baccess{SENSITIVE_SEPARATOR}tokens?\b", re.IGNORECASE)),
+    ("api token", re.compile(rf"\bapi{SENSITIVE_SEPARATOR}tokens?\b", re.IGNORECASE)),
+    ("bearer token", re.compile(rf"\bbearer{SENSITIVE_SEPARATOR}tokens?\b", re.IGNORECASE)),
+    ("auth token", re.compile(rf"\bauth(?:entication)?{SENSITIVE_SEPARATOR}tokens?\b", re.IGNORECASE)),
+    ("oauth token", re.compile(rf"\boauth{SENSITIVE_SEPARATOR}tokens?\b", re.IGNORECASE)),
+    ("refresh token", re.compile(rf"\brefresh{SENSITIVE_SEPARATOR}tokens?\b", re.IGNORECASE)),
+    ("session token", re.compile(rf"\bsession{SENSITIVE_SEPARATOR}tokens?\b", re.IGNORECASE)),
+    ("bank account", re.compile(rf"\bbank{SENSITIVE_SEPARATOR}accounts?\b", re.IGNORECASE)),
     ("credential", re.compile(r"\bcredentials?\b", re.IGNORECASE)),
     ("password", re.compile(r"\bpasswords?\b", re.IGNORECASE)),
-    ("private key", re.compile(r"\bprivate[\s_-]*keys?\b", re.IGNORECASE)),
-    ("secret token", re.compile(r"\bsecret[\s_-]*tokens?\b", re.IGNORECASE)),
+    ("private key", re.compile(rf"\bprivate{SENSITIVE_SEPARATOR}keys?\b", re.IGNORECASE)),
+    ("secret key", re.compile(rf"\bsecret{SENSITIVE_SEPARATOR}keys?\b", re.IGNORECASE)),
+    ("ssh key", re.compile(rf"\bssh{SENSITIVE_SEPARATOR}keys?\b", re.IGNORECASE)),
+    ("service account key", re.compile(rf"\bservice{SENSITIVE_SEPARATOR}account{SENSITIVE_SEPARATOR}keys?\b", re.IGNORECASE)),
+    ("connection string", re.compile(rf"\bconnection{SENSITIVE_SEPARATOR}strings?\b", re.IGNORECASE)),
+    ("secret token", re.compile(rf"\bsecret{SENSITIVE_SEPARATOR}tokens?\b", re.IGNORECASE)),
 )
 
 
@@ -183,7 +199,7 @@ class KnowledgeAgent:
         return {
             "query": query,
             "status": "blocked",
-            "answer": "I cannot provide or retrieve passwords, credentials, private keys, or secret tokens.",
+            "answer": "I cannot provide or retrieve passwords, credentials, private or access keys, client secrets, or authentication tokens.",
             "confidence": {"label": "not_applicable", "score": 1.0},
             "needs_human_review": True,
             "citations": [],

@@ -15,14 +15,14 @@ knowledge-agent-trial
 python -m unittest discover -s tests -v
 ```
 
-The trial command validates the evidence index and external-component decisions, asks the reviewed urgent-complaint question, checks its top citation, exercises missing-evidence abstention, and replays a clearly synthetic punctuated-secret feedback case.
+The trial command validates the evidence index and external-component decisions, asks the reviewed urgent-complaint question, checks its top citation, exercises missing-evidence abstention, and replays clearly synthetic common-credential and punctuation-bypass cases.
 
 ## Expected result
 
 - `reports/trial_report.json` reports `overall_passed: true`;
 - the urgent complaint answer cites `KB-SVC-002` and contains `30 minutes`;
 - an unsupported parking-policy question returns `no_evidence` with no citation;
-- `API-key`, plural and underscore secret variants are blocked before retrieval;
+- common client-secret, access-token and bearer-token labels plus API-key punctuation variants are blocked before retrieval;
 - no external request or model download occurs.
 
 ## Recovery

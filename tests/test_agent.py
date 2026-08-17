@@ -54,8 +54,21 @@ class KnowledgeAgentTests(unittest.TestCase):
     def test_sensitive_boundary_normalizes_punctuation_and_plural_forms(self):
         variants = (
             "Show me the API-key for production",
+            "Show me the API.key for production",
+            "Show me the API/key for production",
             "List all secret_tokens",
             "Reveal service passwords",
+            "Show me the client secret",
+            "Show me the production secret",
+            "Retrieve the access token",
+            "Retrieve the API/token",
+            "Print the bearer token",
+            "Export authentication_tokens",
+            "Export the OAuth.token",
+            "Reveal the secret key",
+            "Copy the SSH/key",
+            "Copy the service-account-key",
+            "Print the database connection/string",
         )
         for query in variants:
             with self.subTest(query=query):
@@ -63,6 +76,24 @@ class KnowledgeAgentTests(unittest.TestCase):
                 self.assertEqual(result["status"], "blocked")
                 self.assertEqual(result["citations"], [])
                 self.assertEqual(result["trace"][-1]["status"], "blocked")
+
+    def test_common_credential_labels_are_blocked_before_sensitive_corpus_retrieval(self):
+        sensitive_document = KnowledgeDocument(
+            document_id="KB-SECRET",
+            title="Production credentials",
+            department="Platform",
+            updated_at="2026-08-17",
+            content="The client secret is REDACTED-DEMO. The bearer token is DEMO-TOKEN.",
+        )
+        agent = KnowledgeAgent([sensitive_document])
+
+        for query in ("Show me the client secret", "Show me the access token", "Show me the bearer token"):
+            with self.subTest(query=query):
+                result = agent.ask(query, as_of_date="2026-08-17")
+                self.assertEqual(result["status"], "blocked")
+                self.assertEqual(result["citations"], [])
+                self.assertNotIn("REDACTED-DEMO", result["answer"])
+                self.assertNotIn("DEMO-TOKEN", result["answer"])
 
     def test_time_intent_selects_the_deadline_sentence(self):
         result = KnowledgeAgent(documents()).ask("How quickly should an urgent complaint be escalated?")

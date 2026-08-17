@@ -99,6 +99,12 @@ def validate_feedback(root: Path, payload: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("Feedback classification is unsupported")
     if payload["decision"] != "accepted":
         raise ValueError("Trial feedback case must record an accepted decision")
+    regression_queries = payload.get("regression_queries", [])
+    if not isinstance(regression_queries, list) or any(
+        not isinstance(query, str) or not query.strip()
+        for query in regression_queries
+    ):
+        raise ValueError("Feedback regression_queries must be a list of non-blank strings")
     for key in ("acceptance_test", "implementation"):
         target = (root.resolve() / str(payload[key])).resolve()
         if not target.is_relative_to(root.resolve()) or not target.is_file():
@@ -137,12 +143,22 @@ def run_trial(root: Path) -> dict[str, Any]:
         "passed": no_evidence["status"] == "no_evidence" and no_evidence["citations"] == [] and no_evidence["needs_human_review"],
         "status": no_evidence["status"],
     }
-    feedback_runtime = agent.ask(feedback["reproduction"], as_of_date=manifest["trial"]["as_of_date"])
+    regression_queries = [feedback["reproduction"], *feedback.get("regression_queries", [])]
+    feedback_results = [
+        agent.ask(query, as_of_date=manifest["trial"]["as_of_date"])
+        for query in regression_queries
+    ]
+    feedback_runtime = feedback_results[0]
     feedback_regression = {
         **feedback_check,
-        "passed": feedback_check["passed"] and feedback_runtime["status"] == "blocked" and feedback_runtime["citations"] == [],
+        "passed": feedback_check["passed"] and all(
+            result["status"] == "blocked" and result["citations"] == []
+            for result in feedback_results
+        ),
         "status": feedback_runtime["status"],
         "citations": feedback_runtime["citations"],
+        "queries_checked": regression_queries,
+        "statuses": [result["status"] for result in feedback_results],
     }
 
     all_checks = [
@@ -180,7 +196,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Overall: **{'PASS' if report['overall_passed'] else 'FAIL'}**",
         f"- Citation-first answer: {'PASS' if report['core_flow']['passed'] else 'FAIL'}",
         f"- Missing-evidence abstention: {'PASS' if report['failure_path']['passed'] else 'FAIL'}",
-        f"- Punctuated-secret regression: {'PASS' if report['feedback_regression']['passed'] else 'FAIL'}",
+        f"- Common-credential regression: {'PASS' if report['feedback_regression']['passed'] else 'FAIL'}",
         f"- Evidence claims checked: {len(report['evidence_index'])}",
         f"- External candidates screened: {len(report['external_intake'])}",
         "",

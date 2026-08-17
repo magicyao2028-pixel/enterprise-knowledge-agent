@@ -5,7 +5,7 @@
 - Overall: **PASS**
 - Citation-first answer: PASS
 - Missing-evidence abstention: PASS
-- Punctuated-secret regression: PASS
+- Common-credential regression: PASS
 - Evidence claims checked: 7
 - External candidates screened: 2
 

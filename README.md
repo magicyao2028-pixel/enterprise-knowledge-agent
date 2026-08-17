@@ -23,7 +23,7 @@ Policies, operating procedures and product knowledge are often scattered across 
 - returns an extractive answer with visible citations;
 - exposes retrieval scores and an execution trace;
 - abstains when no source supports an answer;
-- blocks requests for credentials and secrets;
+- conservatively blocks explicit requests for common credential types before retrieval;
 - runs without a paid API or external data transfer.
 - provides a 10–20 minute reviewer trial with a machine-readable evidence chain and safety-feedback replay.
 

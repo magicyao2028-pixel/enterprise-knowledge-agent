@@ -45,7 +45,7 @@ This hypothesis has not been validated with real users. v0.1 tests technical beh
 4. Compose an extractive answer from retrieved text.
 5. Attach document ID, title, department and update date.
 6. Abstain when the corpus has no matching evidence.
-7. Block explicit requests for secrets or credentials.
+7. Conservatively block explicit requests for common secret and credential types before retrieval.
 8. Preserve an Agent execution trace.
 9. Split documents into stable chunks before ranking.
 10. Filter retrieval by exact department, tag and minimum update date.
@@ -69,7 +69,7 @@ This hypothesis has not been validated with real users. v0.1 tests technical beh
 | FR-02 | Retrieve evidence | Must | A known query ranks the expected document first. |
 | FR-03 | Cite sources | Must | An answered response contains source metadata. |
 | FR-04 | Abstain | Must | An unsupported question produces no citation and requests human review. |
-| FR-05 | Protect secrets | Must | An explicit secret request is blocked before retrieval. |
+| FR-05 | Protect secrets | Must | An explicit request for a recognized common secret or credential type is blocked before retrieval. |
 | FR-06 | Expose trace | Should | Response lists the executed workflow steps and status. |
 | FR-07 | Export JSON | Should | CLI writes a structured answer when `--output` is supplied. |
 | FR-08 | Filter metadata | Should | CLI and Python callers can restrict search by exact department, tag and update date. |

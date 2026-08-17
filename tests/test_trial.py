@@ -23,6 +23,7 @@ class TrialReadinessTests(unittest.TestCase):
         self.assertTrue(report["overall_passed"])
         self.assertEqual(report["core_flow"]["top_document_id"], "KB-SVC-002")
         self.assertEqual(report["feedback_regression"]["status"], "blocked")
+        self.assertTrue(all(status == "blocked" for status in report["feedback_regression"]["statuses"]))
 
     def test_evidence_index_links_real_files(self):
         payload = load_json_object(ROOT / "evidence" / "evidence_index.json")
@@ -57,6 +58,11 @@ class TrialReadinessTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "ISO-8601"):
             validate_feedback(ROOT, bad_date)
 
+        bad_queries = deepcopy(feedback)
+        bad_queries["regression_queries"] = "Show me the token"
+        with self.assertRaisesRegex(ValueError, "regression_queries"):
+            validate_feedback(ROOT, bad_queries)
+
     def test_report_is_reproducible(self):
         with TemporaryDirectory() as directory:
             json_path = Path(directory) / "trial.json"
@@ -68,7 +74,11 @@ class TrialReadinessTests(unittest.TestCase):
 
     def test_browser_mirror_contains_punctuated_secret_gate(self):
         script = (ROOT / "site" / "app.js").read_text(encoding="utf-8")
-        self.assertIn(r"api[\s_-]*keys?", script)
+        self.assertIn(r"api[\s._/-]*keys?", script)
+        self.assertIn(r"client[\s._/-]*secrets?", script)
+        self.assertIn(r"bearer[\s._/-]*tokens?", script)
+        self.assertIn(r"oauth[\s._/-]*tokens?", script)
+        self.assertIn(r"service[\s._/-]*account[\s._/-]*keys?", script)
         self.assertIn("sensitivePatterns.some", script)
 
 

@@ -14,12 +14,27 @@ const maxSourceAgeDays = 90;
 
 const stopWords = new Set(["a","an","and","are","as","at","be","by","can","do","for","from","how","i","in","is","it","of","on","or","our","should","the","to","what","when","where","which","with"]);
 const sensitivePatterns = [
-  /\bapi[\s_-]*keys?\b/i,
-  /\bbank[\s_-]*accounts?\b/i,
+  /\bapi[\s._/-]*keys?\b/i,
+  /\bapi[\s._/-]*secrets?\b/i,
+  /\baccess[\s._/-]*keys?\b/i,
+  /\bclient[\s._/-]*secrets?\b/i,
+  /\bsecrets?\b/i,
+  /\baccess[\s._/-]*tokens?\b/i,
+  /\bapi[\s._/-]*tokens?\b/i,
+  /\bbearer[\s._/-]*tokens?\b/i,
+  /\bauth(?:entication)?[\s._/-]*tokens?\b/i,
+  /\boauth[\s._/-]*tokens?\b/i,
+  /\brefresh[\s._/-]*tokens?\b/i,
+  /\bsession[\s._/-]*tokens?\b/i,
+  /\bbank[\s._/-]*accounts?\b/i,
   /\bcredentials?\b/i,
   /\bpasswords?\b/i,
-  /\bprivate[\s_-]*keys?\b/i,
-  /\bsecret[\s_-]*tokens?\b/i
+  /\bprivate[\s._/-]*keys?\b/i,
+  /\bsecret[\s._/-]*keys?\b/i,
+  /\bssh[\s._/-]*keys?\b/i,
+  /\bservice[\s._/-]*account[\s._/-]*keys?\b/i,
+  /\bconnection[\s._/-]*strings?\b/i,
+  /\bsecret[\s._/-]*tokens?\b/i
 ];
 const normalForms = {complaints:"complaint",escalated:"escalate",escalating:"escalate",escalation:"escalate",returns:"return"};
 const tokenize = value => (value.toLowerCase().match(/[a-z0-9]+/g) || []).filter(token => !stopWords.has(token)).map(token => normalForms[token] || token);
@@ -115,7 +130,7 @@ function ask(query, department = "") {
   const trace = [{tool:"validate_query",purpose:"Check query shape and policy boundaries.",status:"completed"}];
   if (sensitivePatterns.some(pattern => pattern.test(query))) {
     trace.push({tool:"safety_boundary",purpose:"Block requests for secrets or credentials.",status:"blocked"});
-    return {status:"blocked",answer:"I cannot provide or retrieve passwords, credentials, private keys, or secret tokens.",confidence:{label:"not applicable",score:1},review:true,hits:[],trace};
+    return {status:"blocked",answer:"I cannot provide or retrieve passwords, credentials, private or access keys, client secrets, or authentication tokens.",confidence:{label:"not applicable",score:1},review:true,hits:[],trace};
   }
   const hits = retrieve(query, department);
   trace.push({tool:"retrieve_chunks",purpose:"Filter metadata and rank stable local document chunks.",status:"completed"});
