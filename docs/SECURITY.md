@@ -4,7 +4,7 @@
 
 - synthetic documents only;
 - no model API or external request;
-- explicit block for common credential and secret requests;
+- conservative pre-retrieval block for common credential and secret requests, including space, hyphen, underscore and plural variants;
 - evidence-free questions produce abstention rather than a fabricated answer;
 - stale, future-dated or structurally conflicting evidence stops answer composition;
 - all operational use requires human review.

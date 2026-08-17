@@ -25,6 +25,7 @@ Policies, operating procedures and product knowledge are often scattered across 
 - abstains when no source supports an answer;
 - blocks requests for credentials and secrets;
 - runs without a paid API or external data transfer.
+- provides a 10–20 minute reviewer trial with a machine-readable evidence chain and safety-feedback replay.
 
 ## What this repository demonstrates
 
@@ -40,6 +41,7 @@ Policies, operating procedures and product knowledge are often scattered across 
 | Knowledge governance | Explicit freshness report and structured conflicting-source gate |
 | System planning | [Architecture](docs/ARCHITECTURE.md) with explicit v0.1 boundaries |
 | Runnable proof | Python CLI, synthetic corpus and zero-cost [browser prototype](site/) |
+| Trial readiness | [Reviewer trial](docs/TRIAL_GUIDE.md), [evidence index](evidence/evidence_index.json), external-intake decisions and synthetic safety regression |
 
 ## Core workflow
 
@@ -69,6 +71,7 @@ knowledge-agent "How should a complaint be escalated?" --department "Customer Op
 knowledge-agent "What is the domestic travel hotel reimbursement ceiling?" --corpus data/governance_fixture.json --as-of 2026-08-14
 knowledge-agent "How many supplier quotes are required?" --corpus data/governance_fixture.json --as-of 2026-08-14 --max-source-age-days 90
 python -m unittest discover -s tests -v
+knowledge-agent-trial
 ```
 
 To run without installation:
@@ -127,15 +130,20 @@ These boundaries leave testable room for later maintenance instead of presenting
 - [Maintenance plan](docs/MAINTENANCE_PLAN.md)
 - [Current handoff](HANDOFF.md)
 - [Changelog](CHANGELOG.md)
+- [Reviewer trial guide](docs/TRIAL_GUIDE.md)
+- [Machine-readable evidence index](evidence/evidence_index.json)
+- [External component screening](evidence/external_intake.json)
+- [Synthetic feedback case](evidence/feedback_case.json)
 
 ## Roadmap
 
 - v0.1: offline retrieval, citations, abstention, tests and static demo;
 - v0.2: evaluated query set and retrieval-quality report;
 - v0.3: document chunking and metadata filters;
-- v0.4: source freshness and structured conflicting-policy gates (current);
-- v0.5: optional local embedding adapter and lexical comparison benchmark;
-- v0.6: service API, persistence and access-control design;
+- v0.4: source freshness and structured conflicting-policy gates;
+- v0.5: reviewer trial, evidence index, governed external screening and feedback regression (current);
+- v0.6: optional local embedding adapter and lexical comparison benchmark;
+- v0.7: service API, persistence and access-control design;
 - v1.0: controlled private pilot with knowledge-owner review.
 
 ## License

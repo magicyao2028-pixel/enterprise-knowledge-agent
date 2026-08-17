@@ -7,8 +7,8 @@ The initial repository is intentionally limited. Each round must add implementat
 | M1 | Reviewed query set and retrieval-quality report | Complete |
 | M2 | Chunking and metadata filters | Complete |
 | M3 | Conflicting-source and freshness handling | Complete |
-| M4 | Optional local embedding adapter with lexical baseline comparison | Planned |
-| M5 | Feedback capture and evaluation replay | Planned |
+| M4 | Trial package, evidence index, external screening and feedback regression | Complete |
+| M5 | Optional local embedding adapter with lexical baseline comparison | Planned |
 | M6 | Service API and contract tests | Planned |
 | M7 | Role/document permission model | Planned |
 | M8 | Audit events, observability and error taxonomy | Planned |

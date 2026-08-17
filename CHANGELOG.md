@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 - 2026-08-17
+
+- Added an executable reviewer trial and machine-readable evidence index.
+- Recorded exact retrieval-component versions, licenses and non-adoption reasons without forcing dependencies.
+- Converted a clearly synthetic punctuation-bypass report into normalized sensitive-term blocking and regression coverage.
+- Added abstention verification, trial instructions, honest non-adoption conditions and public trial evidence.
+
 ## 0.4.0 - 2026-08-14
 
 - added explicit source-age, review-deadline and future-date assessment;

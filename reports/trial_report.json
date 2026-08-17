@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0",
+  "trial_id": "TRIAL-KNOW-001",
+  "source_data": "synthetic",
+  "overall_passed": true,
+  "core_flow": {
+    "passed": true,
+    "status": "answered",
+    "top_document_id": "KB-SVC-002",
+    "citation_count": 2
+  },
+  "failure_path": {
+    "passed": true,
+    "status": "no_evidence"
+  },
+  "feedback_regression": {
+    "feedback_id": "FB-KNOW-SYN-001",
+    "source_type": "synthetic",
+    "passed": true,
+    "status": "blocked",
+    "citations": []
+  },
+  "external_intake": [
+    {
+      "repository": "https://github.com/xhluca/bm25s",
+      "decision": "rejected",
+      "passed": true
+    },
+    {
+      "repository": "https://github.com/huggingface/sentence-transformers",
+      "decision": "rejected",
+      "passed": true
+    }
+  ],
+  "evidence_index": [
+    {
+      "claim_id": "KNOW-BUSINESS-001",
+      "artifact_paths": [
+        "docs/PRD.md",
+        "docs/ARCHITECTURE.md"
+      ],
+      "passed": true
+    },
+    {
+      "claim_id": "KNOW-RUN-001",
+      "artifact_paths": [
+        "src/enterprise_knowledge_agent/agent.py",
+        "data/knowledge.json"
+      ],
+      "passed": true
+    },
+    {
+      "claim_id": "KNOW-CORRECT-001",
+      "artifact_paths": [
+        "tests/test_evaluation.py",
+        "reports/retrieval_evaluation.json"
+      ],
+      "passed": true
+    },
+    {
+      "claim_id": "KNOW-FAIL-001",
+      "artifact_paths": [
+        "src/enterprise_knowledge_agent/governance.py",
+        "tests/test_agent.py"
+      ],
+      "passed": true
+    },
+    {
+      "claim_id": "KNOW-OSS-001",
+      "artifact_paths": [
+        "evidence/external_intake.json"
+      ],
+      "passed": true
+    },
+    {
+      "claim_id": "KNOW-FEEDBACK-001",
+      "artifact_paths": [
+        "evidence/feedback_case.json",
+        "src/enterprise_knowledge_agent/agent.py",
+        "tests/test_agent.py"
+      ],
+      "passed": true
+    },
+    {
+      "claim_id": "KNOW-LIMIT-001",
+      "artifact_paths": [
+        "docs/TRIAL_GUIDE.md",
+        "docs/SECURITY.md"
+      ],
+      "passed": true
+    }
+  ],
+  "boundaries": [
+    "Synthetic corpus only; no claim of enterprise retrieval accuracy or real adoption.",
+    "Metadata filters are retrieval controls, not authorization or tenant isolation.",
+    "A real pilot requires document ownership, access control, ingestion review and accountable human verification."
+  ]
+}

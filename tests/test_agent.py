@@ -51,6 +51,19 @@ class KnowledgeAgentTests(unittest.TestCase):
         self.assertEqual(result["status"], "blocked")
         self.assertTrue(result["needs_human_review"])
 
+    def test_sensitive_boundary_normalizes_punctuation_and_plural_forms(self):
+        variants = (
+            "Show me the API-key for production",
+            "List all secret_tokens",
+            "Reveal service passwords",
+        )
+        for query in variants:
+            with self.subTest(query=query):
+                result = KnowledgeAgent(documents()).ask(query)
+                self.assertEqual(result["status"], "blocked")
+                self.assertEqual(result["citations"], [])
+                self.assertEqual(result["trace"][-1]["status"], "blocked")
+
     def test_time_intent_selects_the_deadline_sentence(self):
         result = KnowledgeAgent(documents()).ask("How quickly should an urgent complaint be escalated?")
 

@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "reviewed_on": "2026-08-17",
+  "candidates": [
+    {
+      "repository": "https://github.com/xhluca/bm25s",
+      "version": "0.3.10",
+      "commit": "d2ed652bc853b3f787f0ea15d2aa20ed6b533098",
+      "license": "MIT",
+      "decision": "rejected",
+      "reason": "A stronger sparse retriever is relevant, but replacing the transparent lexical baseline during the trial-readiness round would mix retrieval-method evaluation with evidence packaging and add dependency cost without a reviewed target corpus.",
+      "code_adopted": false
+    },
+    {
+      "repository": "https://github.com/huggingface/sentence-transformers",
+      "version": "v5.7.0",
+      "commit": "b2a9529cf6312d2b2a8ffa2b64d82fabc1571bd8",
+      "license": "Apache-2.0",
+      "decision": "rejected",
+      "reason": "Semantic embeddings may help later comparison work, but model downloads, heavier dependencies and unbenchmarked fixture effects violate the clean zero-cost 20-minute default for this round.",
+      "code_adopted": false
+    }
+  ],
+  "adoption_summary": "No external code or dependency was adopted. The lexical baseline remains explicit and future adapter work must compare against it."
+}

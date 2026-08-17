@@ -9,11 +9,18 @@ const documents = [
   {document_id:"KB-FUT-008",title:"Future Inventory Safety Stock Policy",department:"Supply Chain",updated_at:"2026-09-01",review_due_at:"2027-01-31",claim_key:"inventory.safety_stock_cover",claim_value:"fourteen days",tags:["inventory","safety stock","future policy"],content:"The future inventory safety stock policy requires fourteen days of cover. Its update date is later than the current analysis date and it must not be treated as current evidence."}
 ];
 
-const analysisDate = "2026-08-14";
+const analysisDate = "2026-08-17";
 const maxSourceAgeDays = 90;
 
 const stopWords = new Set(["a","an","and","are","as","at","be","by","can","do","for","from","how","i","in","is","it","of","on","or","our","should","the","to","what","when","where","which","with"]);
-const sensitiveTerms = ["api key","bank account","credential","password","private key","secret token"];
+const sensitivePatterns = [
+  /\bapi[\s_-]*keys?\b/i,
+  /\bbank[\s_-]*accounts?\b/i,
+  /\bcredentials?\b/i,
+  /\bpasswords?\b/i,
+  /\bprivate[\s_-]*keys?\b/i,
+  /\bsecret[\s_-]*tokens?\b/i
+];
 const normalForms = {complaints:"complaint",escalated:"escalate",escalating:"escalate",escalation:"escalate",returns:"return"};
 const tokenize = value => (value.toLowerCase().match(/[a-z0-9]+/g) || []).filter(token => !stopWords.has(token)).map(token => normalForms[token] || token);
 const queryTermsFor = value => {
@@ -106,7 +113,7 @@ function assessEvidence(hits) {
 
 function ask(query, department = "") {
   const trace = [{tool:"validate_query",purpose:"Check query shape and policy boundaries.",status:"completed"}];
-  if (sensitiveTerms.some(term => query.toLowerCase().includes(term))) {
+  if (sensitivePatterns.some(pattern => pattern.test(query))) {
     trace.push({tool:"safety_boundary",purpose:"Block requests for secrets or credentials.",status:"blocked"});
     return {status:"blocked",answer:"I cannot provide or retrieve passwords, credentials, private keys, or secret tokens.",confidence:{label:"not applicable",score:1},review:true,hits:[],trace};
   }

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
+import re
 from typing import Iterable
 
 from .governance import assess_evidence
@@ -9,9 +10,14 @@ from .models import KnowledgeDocument, MetadataFilters, SearchHit
 from .retrieval import expand_query_terms, search_documents
 
 
-SENSITIVE_TERMS = {
-    "api key", "bank account", "credential", "password", "private key", "secret token",
-}
+SENSITIVE_PATTERNS = (
+    ("api key", re.compile(r"\bapi[\s_-]*keys?\b", re.IGNORECASE)),
+    ("bank account", re.compile(r"\bbank[\s_-]*accounts?\b", re.IGNORECASE)),
+    ("credential", re.compile(r"\bcredentials?\b", re.IGNORECASE)),
+    ("password", re.compile(r"\bpasswords?\b", re.IGNORECASE)),
+    ("private key", re.compile(r"\bprivate[\s_-]*keys?\b", re.IGNORECASE)),
+    ("secret token", re.compile(r"\bsecret[\s_-]*tokens?\b", re.IGNORECASE)),
+)
 
 
 @dataclass
@@ -47,7 +53,7 @@ class KnowledgeAgent:
 
         trace = AgentTrace()
         trace.record("validate_query", "Check query shape and policy boundaries.")
-        sensitive_match = next((term for term in SENSITIVE_TERMS if term in cleaned_query.lower()), None)
+        sensitive_match = next((label for label, pattern in SENSITIVE_PATTERNS if pattern.search(cleaned_query)), None)
         if sensitive_match:
             trace.record("safety_boundary", "Block requests for secrets or credentials.", "blocked")
             return self._blocked_response(cleaned_query, trace.steps)

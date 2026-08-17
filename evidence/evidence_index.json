@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0",
+  "project": "enterprise-knowledge-agent",
+  "trial": {
+    "trial_id": "TRIAL-KNOW-001",
+    "duration_minutes": 20,
+    "command": "knowledge-agent-trial",
+    "sample_input": "data/knowledge.json",
+    "question": "How quickly should an urgent complaint be escalated?",
+    "as_of_date": "2026-08-17",
+    "expected": {
+      "status": "answered",
+      "top_document_id": "KB-SVC-002",
+      "answer_contains": "30 minutes"
+    }
+  },
+  "claims": [
+    {
+      "claim_id": "KNOW-BUSINESS-001",
+      "statement": "The workflow supports evidence-first employee policy lookup with knowledge-owner escalation.",
+      "artifacts": [
+        {"kind": "requirements", "path": "docs/PRD.md"},
+        {"kind": "architecture", "path": "docs/ARCHITECTURE.md"}
+      ]
+    },
+    {
+      "claim_id": "KNOW-RUN-001",
+      "statement": "A synthetic local corpus can produce a chunk-cited answer without a paid API.",
+      "artifacts": [
+        {"kind": "implementation", "path": "src/enterprise_knowledge_agent/agent.py"},
+        {"kind": "sample", "path": "data/knowledge.json"}
+      ]
+    },
+    {
+      "claim_id": "KNOW-CORRECT-001",
+      "statement": "Twelve reviewed queries and governance branches have deterministic tests.",
+      "artifacts": [
+        {"kind": "tests", "path": "tests/test_evaluation.py"},
+        {"kind": "report", "path": "reports/retrieval_evaluation.json"}
+      ]
+    },
+    {
+      "claim_id": "KNOW-FAIL-001",
+      "statement": "Missing, stale, conflicting, future-dated and sensitive evidence paths stop answer composition.",
+      "artifacts": [
+        {"kind": "governance", "path": "src/enterprise_knowledge_agent/governance.py"},
+        {"kind": "tests", "path": "tests/test_agent.py"}
+      ]
+    },
+    {
+      "claim_id": "KNOW-OSS-001",
+      "statement": "Retrieval components were screened with exact version and license provenance; neither was forced into the lexical default.",
+      "artifacts": [
+        {"kind": "screening", "path": "evidence/external_intake.json"}
+      ]
+    },
+    {
+      "claim_id": "KNOW-FEEDBACK-001",
+      "statement": "A synthetic punctuation-bypass report is linked to a normalized secret boundary and regression test.",
+      "artifacts": [
+        {"kind": "feedback", "path": "evidence/feedback_case.json"},
+        {"kind": "implementation", "path": "src/enterprise_knowledge_agent/agent.py"},
+        {"kind": "test", "path": "tests/test_agent.py"}
+      ]
+    },
+    {
+      "claim_id": "KNOW-LIMIT-001",
+      "statement": "Production gaps and non-adoption conditions are explicit.",
+      "artifacts": [
+        {"kind": "trial_guide", "path": "docs/TRIAL_GUIDE.md"},
+        {"kind": "security", "path": "docs/SECURITY.md"}
+      ]
+    }
+  ],
+  "boundaries": [
+    "Synthetic corpus only; no claim of enterprise retrieval accuracy or real adoption.",
+    "Metadata filters are retrieval controls, not authorization or tenant isolation.",
+    "A real pilot requires document ownership, access control, ingestion review and accountable human verification."
+  ]
+}

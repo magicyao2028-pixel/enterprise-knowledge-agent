@@ -2,8 +2,8 @@
 
 ## Current state
 
-- Release stage: v0.4 product-validation prototype.
-- Maintenance completed: M3/10.
+- Release stage: v0.5 trial-readiness prototype.
+- Maintenance completed: M4/10.
 - Core flow: validated corpus → query safety → metadata filter → stable chunking → lexical retrieval → freshness/conflict assessment → chunk-cited answer or governed abstention.
 - Public data: synthetic only.
 - Runtime cost: zero paid API dependency.
@@ -14,11 +14,12 @@
 PYTHONPATH=src python -m unittest discover -s tests -v
 PYTHONPATH=src python -m enterprise_knowledge_agent.cli "How quickly should an urgent complaint be escalated?"
 PYTHONPATH=src python -m enterprise_knowledge_agent.evaluation_cli
+PYTHONPATH=src python -m enterprise_knowledge_agent.trial_cli
 ```
 
 ## Next maintenance round
 
-M4 should add an optional local embedding adapter and compare it with the current lexical baseline. Keep lexical retrieval available, use no paid API and report fixture limitations.
+M5 should add an optional local embedding adapter and compare it with the current lexical baseline. Keep lexical retrieval available, use no paid API and report fixture limitations.
 
 ## Known limitations
 
@@ -31,4 +32,5 @@ M4 should add an optional local embedding adapter and compare it with the curren
 - freshness thresholds identify review risk rather than policy validity;
 - heuristic confidence is not calibrated;
 - browser and Python implementations are mirrored manually;
+- the secret boundary is a conservative pattern screen, not a complete data-loss-prevention system;
 - no authentication, permissions, persistence, API or real user study.
