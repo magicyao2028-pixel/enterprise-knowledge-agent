@@ -4,7 +4,7 @@
 
 - synthetic documents only;
 - no model API or external request;
-- conservative pre-retrieval block for common password, credential, key, client-secret and authentication-token requests, including space, dot, slash, hyphen, underscore and plural variants;
+- conservative fail-safe pre-retrieval block for recognized password, passcode, passphrase, PIN, credential, key, secret, token, OTP, MFA-code and related sensitive-object categories, including common punctuation and plural variants; this deliberately over-blocks some informational questions and routes them to a human;
 - evidence-free questions produce abstention rather than a fabricated answer;
 - stale, future-dated or structurally conflicting evidence stops answer composition;
 - all operational use requires human review.

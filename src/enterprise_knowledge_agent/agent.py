@@ -34,6 +34,26 @@ SENSITIVE_PATTERNS = (
     ("connection string", re.compile(rf"\bconnection{SENSITIVE_SEPARATOR}strings?\b", re.IGNORECASE)),
     ("secret token", re.compile(rf"\bsecret{SENSITIVE_SEPARATOR}tokens?\b", re.IGNORECASE)),
 )
+SENSITIVE_REQUEST_OBJECT = re.compile(
+    r"\b(?:secrets?|credentials?|passwords?|pins?|keys?|tokens?|otps?|totps?)\b"
+    rf"|\bpass{SENSITIVE_SEPARATOR}codes?\b"
+    rf"|\bpass{SENSITIVE_SEPARATOR}phrases?\b"
+    rf"|\bconnection{SENSITIVE_SEPARATOR}strings?\b"
+    rf"|\b(?:login|authentication){SENSITIVE_SEPARATOR}details?\b"
+    rf"|\b(?:mfa|2fa|auth|authentication|verification|recovery|backup){SENSITIVE_SEPARATOR}codes?\b"
+    rf"|\bone{SENSITIVE_SEPARATOR}time{SENSITIVE_SEPARATOR}codes?\b"
+    rf"|\bsecurity{SENSITIVE_SEPARATOR}answers?\b",
+    re.IGNORECASE,
+)
+
+
+def sensitive_request_label(query: str) -> str | None:
+    explicit = next((label for label, pattern in SENSITIVE_PATTERNS if pattern.search(query)), None)
+    if explicit:
+        return explicit
+    if SENSITIVE_REQUEST_OBJECT.search(query):
+        return "recognized sensitive object"
+    return None
 
 
 @dataclass
@@ -69,7 +89,7 @@ class KnowledgeAgent:
 
         trace = AgentTrace()
         trace.record("validate_query", "Check query shape and policy boundaries.")
-        sensitive_match = next((label for label, pattern in SENSITIVE_PATTERNS if pattern.search(cleaned_query)), None)
+        sensitive_match = sensitive_request_label(cleaned_query)
         if sensitive_match:
             trace.record("safety_boundary", "Block requests for secrets or credentials.", "blocked")
             return self._blocked_response(cleaned_query, trace.steps)

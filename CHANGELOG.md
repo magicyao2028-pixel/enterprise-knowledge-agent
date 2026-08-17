@@ -6,6 +6,7 @@
 - Recorded exact retrieval-component versions, licenses and non-adoption reasons without forcing dependencies.
 - Converted a clearly synthetic punctuation-bypass report into normalized sensitive-term blocking and regression coverage.
 - Expanded the conservative boundary to common client-secret, key and token labels after adversarial review reproduced an answer-with-citation bypass.
+- Switched from exact-label and request-intent allowlists to an auditable fail-safe sensitive-object classifier after further natural request phrasings exposed the same method limit.
 - Added abstention verification, trial instructions, honest non-adoption conditions and public trial evidence.
 
 ## 0.4.0 - 2026-08-14

@@ -36,6 +36,8 @@ const sensitivePatterns = [
   /\bconnection[\s._/-]*strings?\b/i,
   /\bsecret[\s._/-]*tokens?\b/i
 ];
+const sensitiveRequestObject = /\b(?:secrets?|credentials?|passwords?|pins?|keys?|tokens?|otps?|totps?)\b|\bpass[\s._/-]*codes?\b|\bpass[\s._/-]*phrases?\b|\bconnection[\s._/-]*strings?\b|\b(?:login|authentication)[\s._/-]*details?\b|\b(?:mfa|2fa|auth|authentication|verification|recovery|backup)[\s._/-]*codes?\b|\bone[\s._/-]*time[\s._/-]*codes?\b|\bsecurity[\s._/-]*answers?\b/i;
+const isSensitiveRequest = query => sensitivePatterns.some(pattern => pattern.test(query)) || sensitiveRequestObject.test(query);
 const normalForms = {complaints:"complaint",escalated:"escalate",escalating:"escalate",escalation:"escalate",returns:"return"};
 const tokenize = value => (value.toLowerCase().match(/[a-z0-9]+/g) || []).filter(token => !stopWords.has(token)).map(token => normalForms[token] || token);
 const queryTermsFor = value => {
@@ -128,7 +130,7 @@ function assessEvidence(hits) {
 
 function ask(query, department = "") {
   const trace = [{tool:"validate_query",purpose:"Check query shape and policy boundaries.",status:"completed"}];
-  if (sensitivePatterns.some(pattern => pattern.test(query))) {
+  if (isSensitiveRequest(query)) {
     trace.push({tool:"safety_boundary",purpose:"Block requests for secrets or credentials.",status:"blocked"});
     return {status:"blocked",answer:"I cannot provide or retrieve passwords, credentials, private or access keys, client secrets, or authentication tokens.",confidence:{label:"not applicable",score:1},review:true,hits:[],trace};
   }

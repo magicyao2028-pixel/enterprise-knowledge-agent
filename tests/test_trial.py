@@ -79,7 +79,8 @@ class TrialReadinessTests(unittest.TestCase):
         self.assertIn(r"bearer[\s._/-]*tokens?", script)
         self.assertIn(r"oauth[\s._/-]*tokens?", script)
         self.assertIn(r"service[\s._/-]*account[\s._/-]*keys?", script)
-        self.assertIn("sensitivePatterns.some", script)
+        self.assertIn("sensitiveRequestObject.test", script)
+        self.assertNotIn("sensitiveRequestIntent", script)
 
 
 if __name__ == "__main__":

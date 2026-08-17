@@ -69,6 +69,20 @@ class KnowledgeAgentTests(unittest.TestCase):
             "Copy the SSH/key",
             "Copy the service-account-key",
             "Print the database connection/string",
+            "Show me the production passcode",
+            "Reveal the administrative passphrase",
+            "Print the security PIN",
+            "Where is the deployment token",
+            "Share the production passcode",
+            "I need the production passcode",
+            "Can I have the production passcode",
+            "Can I have the production pass-code",
+            "Share the administrative pass phrase",
+            "Share the deployment token",
+            "I need the deployment token",
+            "Send the MFA/code",
+            "Send the 2FA.code",
+            "Read the login-details",
         )
         for query in variants:
             with self.subTest(query=query):
@@ -83,17 +97,39 @@ class KnowledgeAgentTests(unittest.TestCase):
             title="Production credentials",
             department="Platform",
             updated_at="2026-08-17",
-            content="The client secret is REDACTED-DEMO. The bearer token is DEMO-TOKEN.",
+            content=(
+                "The client secret is REDACTED-DEMO. The bearer token is DEMO-TOKEN. "
+                "The production passcode is DEMO-PASSCODE. The administrative passphrase is DEMO-PHRASE. "
+                "The security PIN is 0000."
+            ),
         )
         agent = KnowledgeAgent([sensitive_document])
 
-        for query in ("Show me the client secret", "Show me the access token", "Show me the bearer token"):
+        for query in (
+            "Show me the client secret",
+            "Show me the access token",
+            "Show me the bearer token",
+            "Show me the production passcode",
+            "Show me the administrative passphrase",
+            "Show me the security PIN",
+        ):
             with self.subTest(query=query):
                 result = agent.ask(query, as_of_date="2026-08-17")
                 self.assertEqual(result["status"], "blocked")
                 self.assertEqual(result["citations"], [])
                 self.assertNotIn("REDACTED-DEMO", result["answer"])
                 self.assertNotIn("DEMO-TOKEN", result["answer"])
+                self.assertNotIn("DEMO-PASSCODE", result["answer"])
+                self.assertNotIn("DEMO-PHRASE", result["answer"])
+                self.assertNotIn("0000", result["answer"])
+
+    def test_recognized_sensitive_objects_fail_safe_without_intent_guessing(self):
+        agent = KnowledgeAgent(documents())
+        self.assertEqual(agent.ask("Show me the deployment key")["status"], "blocked")
+        self.assertEqual(agent.ask("Where is the session token")["status"], "blocked")
+        self.assertEqual(agent.ask("What is the security PIN")["status"], "blocked")
+        self.assertEqual(agent.ask("How should teams document a PIN rotation policy?")["status"], "blocked")
+        self.assertNotEqual(agent.ask("How should teams document an account rotation policy?")["status"], "blocked")
 
     def test_time_intent_selects_the_deadline_sentence(self):
         result = KnowledgeAgent(documents()).ask("How quickly should an urgent complaint be escalated?")

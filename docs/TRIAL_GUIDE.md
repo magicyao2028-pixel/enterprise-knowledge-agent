@@ -22,7 +22,7 @@ The trial command validates the evidence index and external-component decisions,
 - `reports/trial_report.json` reports `overall_passed: true`;
 - the urgent complaint answer cites `KB-SVC-002` and contains `30 minutes`;
 - an unsupported parking-policy question returns `no_evidence` with no citation;
-- common client-secret, access-token and bearer-token labels plus API-key punctuation variants are blocked before retrieval;
+- common client-secret, token, passcode, passphrase and PIN requests plus API-key punctuation variants are blocked before retrieval;
 - no external request or model download occurs.
 
 ## Recovery
