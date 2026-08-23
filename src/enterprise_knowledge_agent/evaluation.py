@@ -6,6 +6,7 @@ from typing import Any
 
 from .agent import KnowledgeAgent
 from .corpus import load_documents
+from .retrieval import RETRIEVAL_MODES, RetrievalMode
 
 
 def load_query_cases(path: Path) -> list[dict[str, Any]]:
@@ -30,6 +31,9 @@ def load_query_cases(path: Path) -> list[dict[str, Any]]:
 def evaluate_queries(
     corpus_path: Path,
     query_path: Path,
+    retrieval_mode: RetrievalMode = "lexical",
+    *,
+    include_comparison: bool = True,
 ) -> dict[str, Any]:
     agent = KnowledgeAgent(load_documents(corpus_path))
     cases = load_query_cases(query_path)
@@ -45,7 +49,7 @@ def evaluate_queries(
     blocked_correct = 0
 
     for case in cases:
-        response = agent.ask(case["query"], as_of_date="2026-08-14")
+        response = agent.ask(case["query"], as_of_date="2026-08-14", retrieval_mode=retrieval_mode)
         expected_status = case["expected_status"]
         actual_status = str(response["status"])
         status_matches = actual_status == expected_status
@@ -83,7 +87,8 @@ def evaluate_queries(
         )
 
     passed_cases = sum(1 for item in results if item["passed"])
-    return {
+    report = {
+        "retrieval_mode": retrieval_mode,
         "fixture_type": "synthetic reviewed query set",
         "as_of_date": "2026-08-14",
         "summary": {
@@ -105,6 +110,12 @@ def evaluate_queries(
             "A private, knowledge-owner-reviewed dataset is required before business claims.",
         ],
     }
+    if include_comparison:
+        report["mode_comparison"] = {
+            mode: evaluate_queries(corpus_path, query_path, mode, include_comparison=False)["summary"]
+            for mode in RETRIEVAL_MODES
+        }
+    return report
 
 
 def render_markdown(report: dict[str, Any]) -> str:
@@ -113,6 +124,8 @@ def render_markdown(report: dict[str, Any]) -> str:
         "# Retrieval Evaluation Baseline",
         "",
         "> Synthetic reviewed query set. Results are regression evidence, not production accuracy claims.",
+        "",
+        f"- Retrieval mode: `{report['retrieval_mode']}`",
         "",
         "## Summary",
         "",
@@ -139,6 +152,20 @@ def render_markdown(report: dict[str, Any]) -> str:
         )
     lines.extend(
         [
+            "## Retrieval-mode comparison",
+            "",
+            "| Mode | Passed | Top-1 | Top-3 | MRR |",
+            "| --- | --- | --- | --- | --- |",
+        ]
+    )
+    for mode, mode_summary in report.get("mode_comparison", {}).items():
+        lines.append(
+            f"| `{mode}` | {mode_summary['passed_cases']}/{mode_summary['case_count']} | "
+            f"{mode_summary['top1_accuracy']:.0%} | {mode_summary['top3_recall']:.0%} | "
+            f"{mode_summary['mean_reciprocal_rank']:.3f} |"
+        )
+    lines.extend(
+        [
             "",
             "## Interpretation boundary",
             "",
@@ -156,8 +183,9 @@ def write_evaluation_report(
     query_path: Path,
     json_output: Path,
     markdown_output: Path,
+    retrieval_mode: RetrievalMode = "lexical",
 ) -> dict[str, Any]:
-    report = evaluate_queries(corpus_path, query_path)
+    report = evaluate_queries(corpus_path, query_path, retrieval_mode)
     json_output.parent.mkdir(parents=True, exist_ok=True)
     markdown_output.parent.mkdir(parents=True, exist_ok=True)
     json_output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

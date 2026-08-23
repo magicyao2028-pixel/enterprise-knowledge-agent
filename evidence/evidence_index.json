@@ -40,6 +40,15 @@
       ]
     },
     {
+      "claim_id": "KNOW-RETRIEVAL-001",
+      "statement": "The Python workflow exposes lexical, dependency-free local-vector and hybrid modes while preserving the lexical evidence gate.",
+      "artifacts": [
+        {"kind": "implementation", "path": "src/enterprise_knowledge_agent/retrieval.py"},
+        {"kind": "tests", "path": "tests/test_agent.py"},
+        {"kind": "comparison", "path": "reports/retrieval_evaluation.md"}
+      ]
+    },
+    {
       "claim_id": "KNOW-FAIL-001",
       "statement": "Missing, stale, conflicting, future-dated and sensitive evidence paths stop answer composition.",
       "artifacts": [

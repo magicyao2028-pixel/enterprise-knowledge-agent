@@ -26,6 +26,7 @@ Policies, operating procedures and product knowledge are often scattered across 
 - conservatively blocks explicit requests for common credential types before retrieval;
 - runs without a paid API or external data transfer.
 - provides a 10–20 minute reviewer trial with a machine-readable evidence chain and safety-feedback replay.
+- offers an optional dependency-free local vector reranker and a reproducible comparison with the lexical baseline.
 
 ## What this repository demonstrates
 
@@ -70,6 +71,7 @@ knowledge-agent "What evidence is required for a damaged product return?" --outp
 knowledge-agent "How should a complaint be escalated?" --department "Customer Operations" --tag complaint --updated-after 2026-07-01
 knowledge-agent "What is the domestic travel hotel reimbursement ceiling?" --corpus data/governance_fixture.json --as-of 2026-08-14
 knowledge-agent "How many supplier quotes are required?" --corpus data/governance_fixture.json --as-of 2026-08-14 --max-source-age-days 90
+knowledge-agent "How many supplier quotes are required?" --corpus data/governance_fixture.json --as-of 2026-08-14 --max-source-age-days 90 --retrieval-mode hybrid
 python -m unittest discover -s tests -v
 knowledge-agent-trial
 ```
@@ -116,6 +118,7 @@ The public sample is a JSON array using this shape:
 - Freshness rules identify review risk, not whether a policy is legally or operationally valid.
 - There is no authentication, tenant isolation, database, document ingestion pipeline or production deployment.
 - Confidence is a transparent heuristic, not a calibrated probability.
+- `local_vector` is a deterministic hashed token/character reranker, not a pretrained semantic embedding; it cannot justify production accuracy claims.
 - All operational decisions still require an authorized human.
 
 These boundaries leave testable room for later maintenance instead of presenting a one-day prototype as a completed enterprise system.
@@ -141,8 +144,8 @@ These boundaries leave testable room for later maintenance instead of presenting
 - v0.2: evaluated query set and retrieval-quality report;
 - v0.3: document chunking and metadata filters;
 - v0.4: source freshness and structured conflicting-policy gates;
-- v0.5: reviewer trial, evidence index, governed external screening and feedback regression (current);
-- v0.6: optional local embedding adapter and lexical comparison benchmark;
+- v0.5: reviewer trial, evidence index, governed external screening and feedback regression;
+- v0.6: optional local vector reranker and lexical/local-mode comparison benchmark (current);
 - v0.7: service API, persistence and access-control design;
 - v1.0: controlled private pilot with knowledge-owner review.
 

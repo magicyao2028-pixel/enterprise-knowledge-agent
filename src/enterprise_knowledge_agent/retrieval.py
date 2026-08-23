@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import hashlib
+import math
 import re
-from typing import Iterable
+from collections import Counter
+from typing import Iterable, Literal
 
 from .models import KnowledgeChunk, KnowledgeDocument, MetadataFilters, SearchHit
 
@@ -19,6 +22,8 @@ NORMAL_FORMS = {
     "escalation": "escalate",
     "returns": "return",
 }
+RETRIEVAL_MODES = ("lexical", "local_vector", "hybrid")
+RetrievalMode = Literal["lexical", "local_vector", "hybrid"]
 
 
 def tokenize(value: str) -> list[str]:
@@ -32,20 +37,79 @@ def expand_query_terms(value: str) -> set[str]:
     return terms
 
 
+def _features(value: str) -> list[str]:
+    """Return deterministic token and character-ngram features for local vectors."""
+    features: list[str] = []
+    for token in tokenize(value):
+        features.append(f"t:{token}")
+        if len(token) >= 3:
+            features.extend(f"c:{token[index:index + 3]}" for index in range(len(token) - 2))
+    return features
+
+
+class LocalVectorAdapter:
+    """Dependency-free hashed sparse vectors for an honest local reranker.
+
+    This is not a pretrained semantic embedding model. It is a deterministic
+    token/character-ngram reranking baseline that can run offline and be replaced
+    by a reviewed local embedding model later without changing the agent API.
+    """
+
+    def __init__(self, dimension: int = 256) -> None:
+        if dimension < 32:
+            raise ValueError("dimension must be at least 32")
+        self.dimension = dimension
+
+    def encode(self, value: str) -> list[float]:
+        vector = [0.0] * self.dimension
+        for feature, count in Counter(_features(value)).items():
+            digest = hashlib.blake2b(feature.encode("utf-8"), digest_size=8).digest()
+            bucket = int.from_bytes(digest[:4], "big") % self.dimension
+            sign = 1.0 if digest[4] & 1 else -1.0
+            vector[bucket] += sign * count
+        return vector
+
+    @staticmethod
+    def cosine(left: list[float], right: list[float]) -> float:
+        numerator = sum(a * b for a, b in zip(left, right))
+        left_norm = math.sqrt(sum(value * value for value in left))
+        right_norm = math.sqrt(sum(value * value for value in right))
+        if not left_norm or not right_norm:
+            return 0.0
+        return max(0.0, numerator / (left_norm * right_norm))
+
+    def score(self, query: str, document: KnowledgeDocument, chunk: KnowledgeChunk) -> float:
+        query_features = set(_features(query))
+        body_features = set(_features(chunk.text))
+        title_features = set(_features(document.title))
+        tag_features = set(_features(" ".join(document.tags)))
+        if not query_features.intersection(body_features | title_features | tag_features):
+            return 0.0
+        query_vector = self.encode(query)
+        body_score = self.cosine(query_vector, self.encode(chunk.text))
+        title_score = self.cosine(query_vector, self.encode(document.title))
+        tag_score = self.cosine(query_vector, self.encode(" ".join(document.tags)))
+        return round(body_score * 0.65 + title_score * 0.25 + tag_score * 0.10, 6)
+
+
 def search_documents(
     query: str,
     documents: Iterable[KnowledgeDocument],
     top_k: int = 3,
     filters: MetadataFilters | None = None,
     chunk_words: int = 55,
+    retrieval_mode: RetrievalMode = "lexical",
 ) -> list[SearchHit]:
     if top_k < 1:
         raise ValueError("top_k must be at least 1")
+    if retrieval_mode not in RETRIEVAL_MODES:
+        raise ValueError(f"retrieval_mode must be one of: {', '.join(RETRIEVAL_MODES)}")
     query_terms = expand_query_terms(query)
     if not query_terms:
         return []
 
     guard = filters or MetadataFilters()
+    adapter = LocalVectorAdapter() if retrieval_mode in {"local_vector", "hybrid"} else None
     best_by_document: dict[str, SearchHit] = {}
     for document in documents:
         if not guard.matches(document):
@@ -58,17 +122,30 @@ def search_documents(
             tag_matches = query_terms & tag_terms
             content_matches = query_terms & content_terms
             matched = title_matches | tag_matches | content_matches
-            if not matched:
+            lexical_score = 0.0
+            if matched:
+                lexical_score = (
+                    len(title_matches) * 3.0
+                    + len(tag_matches) * 2.0
+                    + len(content_matches)
+                    + len(matched) / len(query_terms)
+                )
+                if query.lower().strip() in f"{document.title} {chunk.text}".lower():
+                    lexical_score += 4.0
+            vector_score = adapter.score(query, document, chunk) if adapter else 0.0
+            if retrieval_mode in {"local_vector", "hybrid"} and not matched:
+                # Keep the governed no-evidence boundary from lexical retrieval;
+                # the optional vector adapter may rerank supported candidates but
+                # must not invent evidence from hash collisions or common n-grams.
                 continue
-
-            score = (
-                len(title_matches) * 3.0
-                + len(tag_matches) * 2.0
-                + len(content_matches)
-                + len(matched) / len(query_terms)
-            )
-            if query.lower().strip() in f"{document.title} {chunk.text}".lower():
-                score += 4.0
+            if retrieval_mode == "lexical":
+                score = lexical_score
+            elif retrieval_mode == "local_vector":
+                score = vector_score * 10
+            else:
+                score = lexical_score + vector_score * 3
+            if score <= 0:
+                continue
             hit = SearchHit(
                 document=document,
                 chunk_id=chunk.chunk_id,

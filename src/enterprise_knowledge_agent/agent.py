@@ -7,7 +7,7 @@ from typing import Iterable
 
 from .governance import assess_evidence
 from .models import KnowledgeDocument, MetadataFilters, SearchHit
-from .retrieval import expand_query_terms, search_documents
+from .retrieval import RETRIEVAL_MODES, RetrievalMode, expand_query_terms, search_documents
 
 
 SENSITIVE_SEPARATOR = r"[\s._/-]*"
@@ -82,6 +82,7 @@ class KnowledgeAgent:
         *,
         as_of_date: str | None = None,
         max_source_age_days: int = 90,
+        retrieval_mode: RetrievalMode = "lexical",
     ) -> dict[str, object]:
         cleaned_query = query.strip()
         if not cleaned_query:
@@ -92,14 +93,25 @@ class KnowledgeAgent:
         sensitive_match = sensitive_request_label(cleaned_query)
         if sensitive_match:
             trace.record("safety_boundary", "Block requests for secrets or credentials.", "blocked")
-            return self._blocked_response(cleaned_query, trace.steps)
+            return self._blocked_response(cleaned_query, trace.steps, retrieval_mode)
 
         applied_filters = filters or MetadataFilters()
-        hits = search_documents(cleaned_query, self.documents, self.top_k, filters=applied_filters)
-        trace.record("retrieve_chunks", "Filter metadata and rank local document chunks with explicit lexical evidence.")
+        if retrieval_mode not in RETRIEVAL_MODES:
+            raise ValueError(f"retrieval_mode must be one of: {', '.join(RETRIEVAL_MODES)}")
+        hits = search_documents(
+            cleaned_query,
+            self.documents,
+            self.top_k,
+            filters=applied_filters,
+            retrieval_mode=retrieval_mode,
+        )
+        trace.record(
+            "retrieve_chunks",
+            f"Filter metadata and rank local document chunks with {retrieval_mode} evidence.",
+        )
         if not hits:
             trace.record("evidence_gate", "Abstain because no source supports an answer.", "no_evidence")
-            return self._no_evidence_response(cleaned_query, trace.steps, applied_filters)
+            return self._no_evidence_response(cleaned_query, trace.steps, applied_filters, retrieval_mode)
 
         governance_hits = [hit for hit in hits if hit.score >= hits[0].score * 0.6]
         assessment = assess_evidence(
@@ -118,6 +130,7 @@ class KnowledgeAgent:
                 assessment,
                 trace.steps,
                 applied_filters,
+                retrieval_mode,
             )
 
         query_terms = expand_query_terms(cleaned_query)
@@ -143,6 +156,7 @@ class KnowledgeAgent:
 
         return {
             "query": cleaned_query,
+            "retrieval_mode": retrieval_mode,
             "status": "answered",
             "answer": answer,
             "confidence": {"label": confidence_label, "score": confidence_score},
@@ -153,7 +167,8 @@ class KnowledgeAgent:
             "evidence_assessment": assessment,
             "trace": trace.steps,
             "limitations": [
-                "Retrieval is English lexical chunk matching, not semantic search.",
+                "Local vector mode is a deterministic hashed token/character reranker, not a pretrained semantic embedding.",
+                "Retrieval is English chunk matching and does not infer business meaning.",
                 "The answer is extractive and may not resolve ambiguous policy questions.",
                 "Freshness uses explicit dates and a configurable age limit; it does not prove policy validity.",
                 "Free-text contradiction is not inferred without structured claim metadata.",
@@ -169,6 +184,7 @@ class KnowledgeAgent:
         assessment: dict[str, object],
         trace: list[dict[str, str]],
         filters: MetadataFilters,
+        retrieval_mode: RetrievalMode,
     ) -> dict[str, object]:
         if status == "conflicting_evidence":
             answer = "The approved corpus contains conflicting structured policy values. A knowledge owner must resolve the source of truth."
@@ -176,6 +192,7 @@ class KnowledgeAgent:
             answer = "The supporting evidence is stale or future-dated for this analysis date. A knowledge owner must verify the current policy."
         return {
             "query": query,
+            "retrieval_mode": retrieval_mode,
             "status": status,
             "answer": answer,
             "confidence": {"label": "not_applicable", "score": 0.0},
@@ -201,9 +218,11 @@ class KnowledgeAgent:
         query: str,
         trace: list[dict[str, str]],
         filters: MetadataFilters,
+        retrieval_mode: RetrievalMode,
     ) -> dict[str, object]:
         return {
             "query": query,
+            "retrieval_mode": retrieval_mode,
             "status": "no_evidence",
             "answer": "I could not find enough evidence in the approved knowledge corpus. Please ask a knowledge owner.",
             "confidence": {"label": "none", "score": 0.0},
@@ -215,9 +234,10 @@ class KnowledgeAgent:
         }
 
     @staticmethod
-    def _blocked_response(query: str, trace: list[dict[str, str]]) -> dict[str, object]:
+    def _blocked_response(query: str, trace: list[dict[str, str]], retrieval_mode: RetrievalMode) -> dict[str, object]:
         return {
             "query": query,
+            "retrieval_mode": retrieval_mode,
             "status": "blocked",
             "answer": "I cannot provide or retrieve passwords, credentials, private or access keys, client secrets, or authentication tokens.",
             "confidence": {"label": "not_applicable", "score": 1.0},

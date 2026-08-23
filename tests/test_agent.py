@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from enterprise_knowledge_agent import KnowledgeAgent, KnowledgeDocument, MetadataFilters, load_documents
-from enterprise_knowledge_agent.retrieval import chunk_document
+from enterprise_knowledge_agent.retrieval import LocalVectorAdapter, chunk_document, search_documents
 
 
 def documents():
@@ -37,6 +37,43 @@ class KnowledgeAgentTests(unittest.TestCase):
         self.assertEqual(result["citations"][0]["chunk_id"], "KB-1-C001")
         self.assertIn("photo evidence", result["answer"])
         self.assertEqual(result["trace"][-1]["tool"], "compose_grounded_answer")
+
+    def test_local_vector_mode_is_explicit_and_deterministic(self):
+        first = KnowledgeAgent(documents()).ask(
+            "What evidence is required for a damaged product return?",
+            retrieval_mode="local_vector",
+        )
+        second = KnowledgeAgent(documents()).ask(
+            "What evidence is required for a damaged product return?",
+            retrieval_mode="local_vector",
+        )
+
+        self.assertEqual(first["retrieval_mode"], "local_vector")
+        self.assertEqual(first["status"], "answered")
+        self.assertEqual(first["citations"][0]["document_id"], "KB-1")
+        self.assertEqual(first["retrieved"], second["retrieved"])
+        self.assertTrue(any("hashed" in item.lower() for item in first["limitations"]))
+
+    def test_hybrid_mode_keeps_lexical_evidence_visible(self):
+        result = KnowledgeAgent(documents()).ask(
+            "How quickly should an urgent complaint be escalated?",
+            retrieval_mode="hybrid",
+        )
+
+        self.assertEqual(result["status"], "answered")
+        self.assertEqual(result["retrieval_mode"], "hybrid")
+        self.assertEqual(result["citations"][0]["document_id"], "KB-2")
+        self.assertIn("30 minutes", result["answer"])
+
+    def test_local_vector_adapter_is_stable_without_dependencies(self):
+        adapter = LocalVectorAdapter(64)
+        self.assertEqual(adapter.encode("same query"), adapter.encode("same query"))
+        self.assertGreater(adapter.cosine(adapter.encode("complaint"), adapter.encode("complaint")), 0.99)
+        self.assertEqual(adapter.score("unrelated parking", documents()[0], chunk_document(documents()[0])[0]), 0.0)
+
+    def test_search_rejects_unknown_retrieval_mode(self):
+        with self.assertRaisesRegex(ValueError, "retrieval_mode"):
+            search_documents("return", documents(), retrieval_mode="unknown")
 
     def test_abstains_when_corpus_has_no_evidence(self):
         result = KnowledgeAgent(documents()).ask("What is the office parking policy?")

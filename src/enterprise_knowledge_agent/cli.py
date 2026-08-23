@@ -7,6 +7,7 @@ from pathlib import Path
 from .agent import KnowledgeAgent
 from .corpus import load_documents
 from .models import MetadataFilters
+from .retrieval import RETRIEVAL_MODES
 
 
 def parse_args() -> argparse.Namespace:
@@ -19,6 +20,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--updated-after", help="Filter to documents updated on or after this ISO-8601 date")
     parser.add_argument("--as-of", dest="as_of_date", help="Analysis date for freshness checks; defaults to today")
     parser.add_argument("--max-source-age-days", type=int, default=90, help="Maximum accepted source age")
+    parser.add_argument(
+        "--retrieval-mode",
+        choices=RETRIEVAL_MODES,
+        default="lexical",
+        help="Retrieval strategy: lexical baseline, dependency-free local vector, or hybrid",
+    )
     parser.add_argument("--output", type=Path, help="Optional path for the JSON answer")
     return parser.parse_args()
 
@@ -31,6 +38,7 @@ def main() -> None:
         filters,
         as_of_date=args.as_of_date,
         max_source_age_days=args.max_source_age_days,
+        retrieval_mode=args.retrieval_mode,
     )
     rendered = json.dumps(answer, ensure_ascii=False, indent=2)
     if args.output:

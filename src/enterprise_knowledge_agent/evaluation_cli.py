@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 
 from .evaluation import write_evaluation_report
+from .retrieval import RETRIEVAL_MODES
 
 
 def parse_args() -> argparse.Namespace:
@@ -12,6 +13,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--queries", type=Path, default=Path("data/evaluation_queries.json"))
     parser.add_argument("--json-output", type=Path, default=Path("reports/retrieval_evaluation.json"))
     parser.add_argument("--markdown-output", type=Path, default=Path("reports/retrieval_evaluation.md"))
+    parser.add_argument("--retrieval-mode", choices=RETRIEVAL_MODES, default="lexical")
     return parser.parse_args()
 
 
@@ -22,6 +24,7 @@ def main() -> None:
         args.queries,
         args.json_output,
         args.markdown_output,
+        args.retrieval_mode,
     )
     summary = report["summary"]
     print(

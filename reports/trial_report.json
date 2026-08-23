@@ -86,6 +86,15 @@
       "passed": true
     },
     {
+      "claim_id": "KNOW-RETRIEVAL-001",
+      "artifact_paths": [
+        "src/enterprise_knowledge_agent/retrieval.py",
+        "tests/test_agent.py",
+        "reports/retrieval_evaluation.md"
+      ],
+      "passed": true
+    },
+    {
       "claim_id": "KNOW-FAIL-001",
       "artifact_paths": [
         "src/enterprise_knowledge_agent/governance.py",

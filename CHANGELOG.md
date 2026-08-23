@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 - 2026-08-23
+
+- Added an optional dependency-free local vector reranker using deterministic token and character-ngram hashing.
+- Added `lexical`, `local_vector` and `hybrid` retrieval modes to the Python API and CLI.
+- Preserved the lexical evidence boundary so vector hash collisions cannot turn unsupported queries into retrieved evidence.
+- Added a reproducible retrieval-mode comparison to the evaluation report and regression tests for determinism, mode selection and invalid modes.
+- Kept the adapter explicitly non-semantic: it is not a pretrained embedding model and does not support production accuracy claims.
+
 ## 0.5.0 - 2026-08-17
 
 - Added an executable reviewer trial and machine-readable evidence index.

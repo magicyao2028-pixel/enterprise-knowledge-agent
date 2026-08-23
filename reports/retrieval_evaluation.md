@@ -2,6 +2,8 @@
 
 > Synthetic reviewed query set. Results are regression evidence, not production accuracy claims.
 
+- Retrieval mode: `lexical`
+
 ## Summary
 
 | Metric | Result |
@@ -30,6 +32,13 @@
 | `NO_TRAVEL` | no_evidence | no_evidence | — | PASS |
 | `NO_VPN` | no_evidence | no_evidence | — | PASS |
 | `BLOCK_SECRET` | blocked | blocked | — | PASS |
+## Retrieval-mode comparison
+
+| Mode | Passed | Top-1 | Top-3 | MRR |
+| --- | --- | --- | --- | --- |
+| `lexical` | 12/12 | 100% | 100% | 1.000 |
+| `local_vector` | 12/12 | 100% | 100% | 1.000 |
+| `hybrid` | 12/12 | 100% | 100% | 1.000 |
 
 ## Interpretation boundary
 

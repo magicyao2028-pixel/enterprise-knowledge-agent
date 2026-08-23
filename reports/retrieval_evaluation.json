@@ -1,4 +1,5 @@
 {
+  "retrieval_mode": "lexical",
   "fixture_type": "synthetic reviewed query set",
   "as_of_date": "2026-08-14",
   "summary": {
@@ -163,5 +164,43 @@
     "The query set and corpus are synthetic and intentionally small.",
     "Scores are regression evidence for this fixture, not production retrieval accuracy.",
     "A private, knowledge-owner-reviewed dataset is required before business claims."
-  ]
+  ],
+  "mode_comparison": {
+    "lexical": {
+      "case_count": 12,
+      "passed_cases": 12,
+      "case_pass_rate": 1.0,
+      "status_accuracy": 1.0,
+      "answerable_queries": 8,
+      "top1_accuracy": 1.0,
+      "top3_recall": 1.0,
+      "mean_reciprocal_rank": 1.0,
+      "abstention_accuracy": 1.0,
+      "blocked_request_accuracy": 1.0
+    },
+    "local_vector": {
+      "case_count": 12,
+      "passed_cases": 12,
+      "case_pass_rate": 1.0,
+      "status_accuracy": 1.0,
+      "answerable_queries": 8,
+      "top1_accuracy": 1.0,
+      "top3_recall": 1.0,
+      "mean_reciprocal_rank": 1.0,
+      "abstention_accuracy": 1.0,
+      "blocked_request_accuracy": 1.0
+    },
+    "hybrid": {
+      "case_count": 12,
+      "passed_cases": 12,
+      "case_pass_rate": 1.0,
+      "status_accuracy": 1.0,
+      "answerable_queries": 8,
+      "top1_accuracy": 1.0,
+      "top3_recall": 1.0,
+      "mean_reciprocal_rank": 1.0,
+      "abstention_accuracy": 1.0,
+      "blocked_request_accuracy": 1.0
+    }
+  }
 }
