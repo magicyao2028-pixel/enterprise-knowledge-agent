@@ -37,7 +37,7 @@ Policies, operating procedures and product knowledge are often scattered across 
 | Grounded output | Source IDs, document metadata and retrieved excerpts |
 | Safety design | Abstention, sensitive-request boundary and human review flag |
 | Evaluation thinking | [Evaluation plan](docs/EVALUATION.md) and automated test cases |
-| Reproducible retrieval evidence | [Twelve-query baseline](reports/retrieval_evaluation.md) covering ranking, abstention and blocking |
+| Reproducible retrieval evidence | [Twelve-query baseline](reports/retrieval_evaluation.md) plus the expanded 16-case mode comparison |
 | Controlled search scope | Stable chunk IDs plus department, tag and freshness filters |
 | Knowledge governance | Explicit freshness report and structured conflicting-source gate |
 | System planning | [Architecture](docs/ARCHITECTURE.md) with explicit v0.1 boundaries |
@@ -74,6 +74,12 @@ knowledge-agent "How many supplier quotes are required?" --corpus data/governanc
 knowledge-agent "How many supplier quotes are required?" --corpus data/governance_fixture.json --as-of 2026-08-14 --max-source-age-days 90 --retrieval-mode hybrid
 python -m unittest discover -s tests -v
 knowledge-agent-trial
+```
+
+The M6 benchmark can be reproduced with:
+
+```bash
+knowledge-agent-eval --queries data/evaluation_queries_m6.json --json-output reports/m6_evaluation.json --markdown-output reports/m6_evaluation.md
 ```
 
 To run without installation:
@@ -145,8 +151,8 @@ These boundaries leave testable room for later maintenance instead of presenting
 - v0.3: document chunking and metadata filters;
 - v0.4: source freshness and structured conflicting-policy gates;
 - v0.5: reviewer trial, evidence index, governed external screening and feedback regression;
-- v0.6: optional local vector reranker and lexical/local-mode comparison benchmark (current);
-- v0.7: service API, persistence and access-control design;
+- v0.6: optional local vector reranker and lexical/local-mode comparison benchmark;
+- v0.7: expanded 16-case benchmark and mode comparison (current);
 - v1.0: controlled private pilot with knowledge-owner review.
 
 ## License

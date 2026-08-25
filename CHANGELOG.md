@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0 - 2026-08-25
+
+- Added a 16-case synthetic retrieval benchmark with four additional answerable queries and retained abstention/sensitive-request cases.
+- Added deterministic lexical/local-vector/hybrid comparison reporting: 15/16, 16/16 and 16/16 on the expanded fixture.
+- Kept the hashed reranker explicitly non-semantic and adopted no embedding dependency without license, size and knowledge-owner evidence.
+- Added trial and regression coverage for the expanded benchmark while preserving citation, freshness, conflict and safety gates.
+
 ## 0.6.0 - 2026-08-23
 
 - Added an optional dependency-free local vector reranker using deterministic token and character-ngram hashing.

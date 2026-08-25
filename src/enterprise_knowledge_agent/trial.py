@@ -8,6 +8,7 @@ from typing import Any
 
 from .agent import KnowledgeAgent
 from .corpus import load_documents
+from .evaluation import evaluate_queries
 
 
 FEEDBACK_CLASSES = {"defect", "requirement", "usability", "performance", "safety", "documentation"}
@@ -120,6 +121,11 @@ def run_trial(root: Path) -> dict[str, Any]:
     evidence_checks = validate_evidence_index(root, manifest)
     external_checks = validate_external_intake(external)
     feedback_check = validate_feedback(root, feedback)
+    benchmark = evaluate_queries(
+        root / "data" / "knowledge.json",
+        root / "data" / "evaluation_queries_m6.json",
+        retrieval_mode="lexical",
+    )
 
     sample_path = (root / str(manifest["trial"]["sample_input"])).resolve()
     if not sample_path.is_relative_to(root) or not sample_path.is_file():
@@ -167,6 +173,10 @@ def run_trial(root: Path) -> dict[str, Any]:
         feedback_regression["passed"],
         all(item["passed"] for item in evidence_checks),
         all(item["passed"] for item in external_checks),
+        benchmark["summary"]["case_count"] == 16
+        and benchmark["mode_comparison"]["lexical"]["passed_cases"] >= 15
+        and benchmark["mode_comparison"]["local_vector"]["passed_cases"] == 16
+        and benchmark["mode_comparison"]["hybrid"]["passed_cases"] == 16,
     ]
     return {
         "schema_version": "1.0",
@@ -183,6 +193,11 @@ def run_trial(root: Path) -> dict[str, Any]:
         "feedback_regression": feedback_regression,
         "external_intake": external_checks,
         "evidence_index": evidence_checks,
+        "extended_benchmark": {
+            "passed": all_checks[-1],
+            "case_count": benchmark["summary"]["case_count"],
+            "mode_comparison": benchmark["mode_comparison"],
+        },
         "boundaries": manifest["boundaries"],
     }
 

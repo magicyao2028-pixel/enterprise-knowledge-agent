@@ -79,6 +79,15 @@
         {"kind": "trial_guide", "path": "docs/TRIAL_GUIDE.md"},
         {"kind": "security", "path": "docs/SECURITY.md"}
       ]
+    },
+    {
+      "claim_id": "KNOW-BENCHMARK-001",
+      "statement": "A larger 16-case synthetic benchmark compares lexical, local-vector and hybrid retrieval while preserving abstention and sensitive-request boundaries.",
+      "artifacts": [
+        {"kind": "fixture", "path": "data/evaluation_queries_m6.json"},
+        {"kind": "report", "path": "reports/m6_evaluation.json"},
+        {"kind": "trial", "path": "src/enterprise_knowledge_agent/trial.py"}
+      ]
     }
   ],
   "boundaries": [

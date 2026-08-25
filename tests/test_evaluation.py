@@ -9,9 +9,17 @@ from enterprise_knowledge_agent.evaluation import evaluate_queries, load_query_c
 ROOT = Path(__file__).parents[1]
 CORPUS = ROOT / "data" / "knowledge.json"
 QUERIES = ROOT / "data" / "evaluation_queries.json"
+EXTENDED_QUERIES = ROOT / "data" / "evaluation_queries_m6.json"
 
 
 class RetrievalEvaluationTests(unittest.TestCase):
+    def test_extended_benchmark_compares_all_modes(self):
+        report = evaluate_queries(CORPUS, EXTENDED_QUERIES)
+        self.assertEqual(report["summary"]["case_count"], 16)
+        self.assertGreaterEqual(report["mode_comparison"]["lexical"]["passed_cases"], 15)
+        self.assertEqual(report["mode_comparison"]["local_vector"]["passed_cases"], 16)
+        self.assertEqual(report["mode_comparison"]["hybrid"]["passed_cases"], 16)
+
     def test_reviewed_query_set_passes(self):
         report = evaluate_queries(CORPUS, QUERIES)
 

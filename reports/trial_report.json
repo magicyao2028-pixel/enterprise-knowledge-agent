@@ -125,8 +125,59 @@
         "docs/SECURITY.md"
       ],
       "passed": true
+    },
+    {
+      "claim_id": "KNOW-BENCHMARK-001",
+      "artifact_paths": [
+        "data/evaluation_queries_m6.json",
+        "reports/m6_evaluation.json",
+        "src/enterprise_knowledge_agent/trial.py"
+      ],
+      "passed": true
     }
   ],
+  "extended_benchmark": {
+    "passed": true,
+    "case_count": 16,
+    "mode_comparison": {
+      "lexical": {
+        "case_count": 16,
+        "passed_cases": 15,
+        "case_pass_rate": 0.9375,
+        "status_accuracy": 1.0,
+        "answerable_queries": 12,
+        "top1_accuracy": 0.9167,
+        "top3_recall": 1.0,
+        "mean_reciprocal_rank": 0.9583,
+        "abstention_accuracy": 1.0,
+        "blocked_request_accuracy": 1.0
+      },
+      "local_vector": {
+        "case_count": 16,
+        "passed_cases": 16,
+        "case_pass_rate": 1.0,
+        "status_accuracy": 1.0,
+        "answerable_queries": 12,
+        "top1_accuracy": 1.0,
+        "top3_recall": 1.0,
+        "mean_reciprocal_rank": 1.0,
+        "abstention_accuracy": 1.0,
+        "blocked_request_accuracy": 1.0
+      },
+      "hybrid": {
+        "case_count": 16,
+        "passed_cases": 16,
+        "case_pass_rate": 1.0,
+        "status_accuracy": 1.0,
+        "answerable_queries": 12,
+        "top1_accuracy": 1.0,
+        "top3_recall": 1.0,
+        "mean_reciprocal_rank": 1.0,
+        "abstention_accuracy": 1.0,
+        "blocked_request_accuracy": 1.0
+      }
+    }
+  },
   "boundaries": [
     "Synthetic corpus only; no claim of enterprise retrieval accuracy or real adoption.",
     "Metadata filters are retrieval controls, not authorization or tenant isolation.",

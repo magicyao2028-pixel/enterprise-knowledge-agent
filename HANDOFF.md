@@ -2,8 +2,8 @@
 
 ## Current state
 
-- Release stage: v0.6 trial-readiness prototype.
-- Maintenance completed: M5/10.
+- Release stage: v0.7 trial-readiness prototype.
+- Maintenance completed: M6/10.
 - Core flow: validated corpus → query safety → metadata filter → stable chunking → lexical/local-vector/hybrid retrieval → freshness/conflict assessment → chunk-cited answer or governed abstention.
 - Public data: synthetic only.
 - Runtime cost: zero paid API dependency.
@@ -25,9 +25,15 @@ PYTHONPATH=src python -m enterprise_knowledge_agent.evaluation_cli --retrieval-m
 - Vector modes retain lexical evidence gating, preventing hash collisions from creating unsupported answers.
 - The synthetic 12-case evaluation remains 12/12 for the lexical baseline; the report records all three mode results and their limitations.
 
+## M6 result
+
+- Added a larger 16-case synthetic benchmark covering four additional answerable queries while retaining three abstention/safety cases.
+- The benchmark records lexical, local-vector and hybrid comparisons: lexical 15/16, local-vector 16/16 and hybrid 16/16 on this fixture.
+- No embedding model dependency was adopted; the existing hashed reranker remains explicitly non-semantic and the lexical baseline remains available.
+
 ## Next maintenance round
 
-M6 can evaluate a reviewed local embedding model only if a zero-cost, license-compatible dependency and a larger benchmark are available. Keep lexical retrieval available and do not treat the current hashed reranker as semantic search.
+M7 can evaluate a reviewed local embedding model only if a zero-cost, license-compatible dependency and a still larger knowledge-owner-reviewed benchmark are available. Keep lexical retrieval available and do not treat the current hashed reranker as semantic search.
 
 ## Known limitations
 
