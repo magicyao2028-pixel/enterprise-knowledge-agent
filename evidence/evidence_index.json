@@ -88,6 +88,15 @@
         {"kind": "report", "path": "reports/m6_evaluation.json"},
         {"kind": "trial", "path": "src/enterprise_knowledge_agent/trial.py"}
       ]
+    },
+    {
+      "claim_id": "KNOW-EMBEDDING-GATE-001",
+      "statement": "A local embedding candidate is screened by license, model-artifact and benchmark gates before any installation; the public trial adopts none.",
+      "artifacts": [
+        {"kind": "implementation", "path": "src/enterprise_knowledge_agent/embedding_gate.py"},
+        {"kind": "review", "path": "evidence/embedding_candidate_review.json"},
+        {"kind": "trial", "path": "src/enterprise_knowledge_agent/trial.py"}
+      ]
     }
   ],
   "boundaries": [

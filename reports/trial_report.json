@@ -134,6 +134,15 @@
         "src/enterprise_knowledge_agent/trial.py"
       ],
       "passed": true
+    },
+    {
+      "claim_id": "KNOW-EMBEDDING-GATE-001",
+      "artifact_paths": [
+        "src/enterprise_knowledge_agent/embedding_gate.py",
+        "evidence/embedding_candidate_review.json",
+        "src/enterprise_knowledge_agent/trial.py"
+      ],
+      "passed": true
     }
   ],
   "extended_benchmark": {
@@ -177,6 +186,17 @@
         "blocked_request_accuracy": 1.0
       }
     }
+  },
+  "embedding_gate": {
+    "passed": true,
+    "candidates": [
+      {
+        "status": "screened_not_adopted",
+        "eligible_for_install": false,
+        "reason": "No reviewed local model artifact or zero-cost deployment boundary was available for this public trial.",
+        "external_action_executed": false
+      }
+    ]
   },
   "boundaries": [
     "Synthetic corpus only; no claim of enterprise retrieval accuracy or real adoption.",

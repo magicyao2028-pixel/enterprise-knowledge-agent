@@ -2,8 +2,8 @@
 
 ## Current state
 
-- Release stage: v0.7 trial-readiness prototype.
-- Maintenance completed: M6/10.
+- Release stage: v0.8 trial-readiness prototype.
+- Maintenance completed: M7/10.
 - Core flow: validated corpus → query safety → metadata filter → stable chunking → lexical/local-vector/hybrid retrieval → freshness/conflict assessment → chunk-cited answer or governed abstention.
 - Public data: synthetic only.
 - Runtime cost: zero paid API dependency.
@@ -31,9 +31,15 @@ PYTHONPATH=src python -m enterprise_knowledge_agent.evaluation_cli --retrieval-m
 - The benchmark records lexical, local-vector and hybrid comparisons: lexical 15/16, local-vector 16/16 and hybrid 16/16 on this fixture.
 - No embedding model dependency was adopted; the existing hashed reranker remains explicitly non-semantic and the lexical baseline remains available.
 
+## M7 result
+
+- Added a fail-closed embedding-candidate gate for repository/license metadata, reviewed local model-artifact availability and non-regressing benchmark metrics.
+- Screened the public candidate fixture without installing or downloading a model; the lexical baseline and hashed reranker remain available.
+- A candidate can become eligible only for a separately approved bounded pilot; the gate never installs dependencies or performs external actions.
+
 ## Next maintenance round
 
-M7 can evaluate a reviewed local embedding model only if a zero-cost, license-compatible dependency and a still larger knowledge-owner-reviewed benchmark are available. Keep lexical retrieval available and do not treat the current hashed reranker as semantic search.
+M8 can add a bounded knowledge-owner review queue for stale/conflicting documents. Keep lexical retrieval available and do not treat the current hashed reranker as semantic search.
 
 ## Known limitations
 

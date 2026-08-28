@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.0 - 2026-08-28
+
+- Added a fail-closed embedding-candidate gate for license, model-artifact and benchmark evidence.
+- Added a public-safe candidate review fixture and trial coverage; no embedding dependency or model download was adopted.
+- Kept the lexical baseline, hashed reranker and human approval boundaries explicit.
+
 ## 0.7.0 - 2026-08-25
 
 - Added a 16-case synthetic retrieval benchmark with four additional answerable queries and retained abstention/sensitive-request cases.

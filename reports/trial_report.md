@@ -6,7 +6,7 @@
 - Citation-first answer: PASS
 - Missing-evidence abstention: PASS
 - Common-credential regression: PASS
-- Evidence claims checked: 9
+- Evidence claims checked: 10
 - External candidates screened: 2
 
 ## Pilot boundary

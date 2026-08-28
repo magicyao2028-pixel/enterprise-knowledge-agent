@@ -152,7 +152,8 @@ These boundaries leave testable room for later maintenance instead of presenting
 - v0.4: source freshness and structured conflicting-policy gates;
 - v0.5: reviewer trial, evidence index, governed external screening and feedback regression;
 - v0.6: optional local vector reranker and lexical/local-mode comparison benchmark;
-- v0.7: expanded 16-case benchmark and mode comparison (current);
+- v0.7: expanded 16-case benchmark and mode comparison;
+- v0.8: reviewed embedding-candidate gate with no dependency installation (current);
 - v1.0: controlled private pilot with knowledge-owner review.
 
 ## License

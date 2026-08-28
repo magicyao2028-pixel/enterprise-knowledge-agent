@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "reviewed_on": "2026-08-28",
+  "baseline": {"case_count": 16, "status_accuracy": 1.0, "top1_accuracy": 0.9167, "abstention_accuracy": 1.0, "blocked_request_accuracy": 1.0},
+  "candidates": [
+    {
+      "repository": "https://github.com/huggingface/sentence-transformers",
+      "version": "v5.7.0",
+      "commit": "b2a9529cf6312d2b2a8ffa2b64d82fabc1571bd8",
+      "license": "Apache-2.0",
+      "decision": "rejected",
+      "code_adopted": false,
+      "model_artifact_available": false,
+      "reason": "No reviewed local model artifact or zero-cost deployment boundary was available for this public trial."
+    }
+  ]
+}

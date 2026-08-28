@@ -9,6 +9,7 @@ from typing import Any
 from .agent import KnowledgeAgent
 from .corpus import load_documents
 from .evaluation import evaluate_queries
+from .embedding_gate import assess_embedding_candidate
 
 
 FEEDBACK_CLASSES = {"defect", "requirement", "usability", "performance", "safety", "documentation"}
@@ -118,9 +119,14 @@ def run_trial(root: Path) -> dict[str, Any]:
     manifest = load_json_object(root / "evidence" / "evidence_index.json")
     external = load_json_object(root / "evidence" / "external_intake.json")
     feedback = load_json_object(root / "evidence" / "feedback_case.json")
+    embedding_review = load_json_object(root / "evidence" / "embedding_candidate_review.json")
     evidence_checks = validate_evidence_index(root, manifest)
     external_checks = validate_external_intake(external)
     feedback_check = validate_feedback(root, feedback)
+    embedding_checks = [
+        assess_embedding_candidate(candidate, embedding_review["baseline"])
+        for candidate in embedding_review.get("candidates", [])
+    ]
     benchmark = evaluate_queries(
         root / "data" / "knowledge.json",
         root / "data" / "evaluation_queries_m6.json",
@@ -177,6 +183,9 @@ def run_trial(root: Path) -> dict[str, Any]:
         and benchmark["mode_comparison"]["lexical"]["passed_cases"] >= 15
         and benchmark["mode_comparison"]["local_vector"]["passed_cases"] == 16
         and benchmark["mode_comparison"]["hybrid"]["passed_cases"] == 16,
+        bool(embedding_checks)
+        and all(item["status"] == "screened_not_adopted" and not item["eligible_for_install"] for item in embedding_checks)
+        and all(item["external_action_executed"] is False for item in embedding_checks),
     ]
     return {
         "schema_version": "1.0",
@@ -198,6 +207,7 @@ def run_trial(root: Path) -> dict[str, Any]:
             "case_count": benchmark["summary"]["case_count"],
             "mode_comparison": benchmark["mode_comparison"],
         },
+        "embedding_gate": {"passed": all_checks[-1], "candidates": embedding_checks},
         "boundaries": manifest["boundaries"],
     }
 
