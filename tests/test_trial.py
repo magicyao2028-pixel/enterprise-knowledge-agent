@@ -21,6 +21,8 @@ class TrialReadinessTests(unittest.TestCase):
     def test_complete_trial_passes(self):
         report = run_trial(ROOT)
         self.assertTrue(report["overall_passed"])
+        self.assertTrue(report["owner_review_queue"]["passed"])
+        self.assertEqual(report["owner_review_queue"]["item_count"], 2)
         self.assertEqual(report["core_flow"]["top_document_id"], "KB-SVC-002")
         self.assertEqual(report["feedback_regression"]["status"], "blocked")
         self.assertTrue(all(status == "blocked" for status in report["feedback_regression"]["statuses"]))
