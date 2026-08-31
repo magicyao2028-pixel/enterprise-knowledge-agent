@@ -10,6 +10,7 @@ from .agent import KnowledgeAgent
 from .corpus import load_documents
 from .evaluation import evaluate_queries
 from .embedding_gate import assess_embedding_candidate
+from .review_queue import build_owner_review_queue
 
 
 FEEDBACK_CLASSES = {"defect", "requirement", "usability", "performance", "safety", "documentation"}
@@ -127,6 +128,21 @@ def run_trial(root: Path) -> dict[str, Any]:
         assess_embedding_candidate(candidate, embedding_review["baseline"])
         for candidate in embedding_review.get("candidates", [])
     ]
+    review_documents = load_documents(root / "data" / "review_queue_fixture.json")
+    review_queue = build_owner_review_queue(review_documents, as_of_date="2026-08-30")
+    review_queue_check = {
+        "passed": (
+            review_queue["item_count"] == 2
+            and review_queue["items"][0]["priority"] == 1
+            and all(item["status"] == "pending_review" for item in review_queue["items"])
+            and review_queue["review_only"] is True
+            and review_queue["evidence_mutated"] is False
+            and review_queue["external_action_executed"] is False
+        ),
+        "item_count": review_queue["item_count"],
+        "priority_order": [item["document_id"] for item in review_queue["items"]],
+        "evidence_mutated": review_queue["evidence_mutated"],
+    }
     benchmark = evaluate_queries(
         root / "data" / "knowledge.json",
         root / "data" / "evaluation_queries_m6.json",
@@ -186,6 +202,7 @@ def run_trial(root: Path) -> dict[str, Any]:
         bool(embedding_checks)
         and all(item["status"] == "screened_not_adopted" and not item["eligible_for_install"] for item in embedding_checks)
         and all(item["external_action_executed"] is False for item in embedding_checks),
+        review_queue_check["passed"],
     ]
     return {
         "schema_version": "1.0",
@@ -208,6 +225,7 @@ def run_trial(root: Path) -> dict[str, Any]:
             "mode_comparison": benchmark["mode_comparison"],
         },
         "embedding_gate": {"passed": all_checks[-1], "candidates": embedding_checks},
+        "owner_review_queue": review_queue_check,
         "boundaries": manifest["boundaries"],
     }
 

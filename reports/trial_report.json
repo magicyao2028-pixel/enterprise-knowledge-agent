@@ -143,6 +143,16 @@
         "src/enterprise_knowledge_agent/trial.py"
       ],
       "passed": true
+    },
+    {
+      "claim_id": "KNOW-OWNER-REVIEW-001",
+      "artifact_paths": [
+        "src/enterprise_knowledge_agent/review_queue.py",
+        "data/review_queue_fixture.json",
+        "tests/test_review_queue.py",
+        "src/enterprise_knowledge_agent/trial.py"
+      ],
+      "passed": true
     }
   ],
   "extended_benchmark": {
@@ -197,6 +207,15 @@
         "external_action_executed": false
       }
     ]
+  },
+  "owner_review_queue": {
+    "passed": true,
+    "item_count": 2,
+    "priority_order": [
+      "KB-REVIEW-001",
+      "KB-REVIEW-002"
+    ],
+    "evidence_mutated": false
   },
   "boundaries": [
     "Synthetic corpus only; no claim of enterprise retrieval accuracy or real adoption.",

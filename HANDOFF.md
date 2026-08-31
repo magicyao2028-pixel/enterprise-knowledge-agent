@@ -2,8 +2,8 @@
 
 ## Current state
 
-- Release stage: v0.8 trial-readiness prototype.
-- Maintenance completed: M7/10.
+- Release stage: v0.9 trial-readiness prototype.
+- Maintenance completed: M8/10.
 - Core flow: validated corpus → query safety → metadata filter → stable chunking → lexical/local-vector/hybrid retrieval → freshness/conflict assessment → chunk-cited answer or governed abstention.
 - Public data: synthetic only.
 - Runtime cost: zero paid API dependency.
@@ -37,9 +37,15 @@ PYTHONPATH=src python -m enterprise_knowledge_agent.evaluation_cli --retrieval-m
 - Screened the public candidate fixture without installing or downloading a model; the lexical baseline and hashed reranker remain available.
 - A candidate can become eligible only for a separately approved bounded pilot; the gate never installs dependencies or performs external actions.
 
+## M8 result
+
+- Added a deterministic owner-review queue for stale and structured-conflict documents.
+- Queue items retain department ownership, reason codes, priority and a bounded next action.
+- The queue is review-only: it does not mutate evidence, documents or retrieval behavior and performs no external action.
+
 ## Next maintenance round
 
-M8 can add a bounded knowledge-owner review queue for stale/conflicting documents. Keep lexical retrieval available and do not treat the current hashed reranker as semantic search.
+M9 can add a bounded review-history or feedback-replay improvement. Keep lexical retrieval available and do not treat the current hashed reranker as semantic search.
 
 ## Known limitations
 

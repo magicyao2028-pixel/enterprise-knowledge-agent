@@ -1,0 +1,30 @@
+[
+  {
+    "document_id": "KB-REVIEW-001",
+    "title": "Legacy Travel Ceiling",
+    "department": "Finance",
+    "updated_at": "2025-01-01",
+    "review_due_at": "2026-08-01",
+    "content": "The travel hotel ceiling is CNY 500.",
+    "claim_key": "travel.hotel_ceiling",
+    "claim_value": "CNY 500"
+  },
+  {
+    "document_id": "KB-REVIEW-002",
+    "title": "Operations Travel Memo",
+    "department": "Operations",
+    "updated_at": "2026-08-10",
+    "review_due_at": "2026-12-31",
+    "content": "The travel hotel ceiling is CNY 650.",
+    "claim_key": "travel.hotel_ceiling",
+    "claim_value": "CNY 650"
+  },
+  {
+    "document_id": "KB-REVIEW-003",
+    "title": "Current Return Window",
+    "department": "Customer Operations",
+    "updated_at": "2026-08-20",
+    "review_due_at": "2026-12-31",
+    "content": "Damaged product returns are accepted within seven days."
+  }
+]

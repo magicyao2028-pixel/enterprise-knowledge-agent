@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.0 - 2026-08-31
+
+- Added a deterministic owner-review queue for stale and conflicting knowledge documents.
+- Added owner/action metadata, synthetic fixture, validation tests and explicit no-mutation boundaries.
+
 ## 0.8.0 - 2026-08-28
 
 - Added a fail-closed embedding-candidate gate for license, model-artifact and benchmark evidence.
