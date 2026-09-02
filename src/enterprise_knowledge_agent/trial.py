@@ -11,6 +11,7 @@ from .corpus import load_documents
 from .evaluation import evaluate_queries
 from .embedding_gate import assess_embedding_candidate
 from .review_queue import build_owner_review_queue
+from .review_history import summarize_owner_review_history
 
 
 FEEDBACK_CLASSES = {"defect", "requirement", "usability", "performance", "safety", "documentation"}
@@ -143,6 +144,8 @@ def run_trial(root: Path) -> dict[str, Any]:
         "priority_order": [item["document_id"] for item in review_queue["items"]],
         "evidence_mutated": review_queue["evidence_mutated"],
     }
+    owner_history_payload = json.loads((root / "data" / "owner_review_history.json").read_text(encoding="utf-8"))
+    owner_history = summarize_owner_review_history(review_queue, owner_history_payload)
     benchmark = evaluate_queries(
         root / "data" / "knowledge.json",
         root / "data" / "evaluation_queries_m6.json",
@@ -189,20 +192,33 @@ def run_trial(root: Path) -> dict[str, Any]:
         "statuses": [result["status"] for result in feedback_results],
     }
 
+    benchmark_passed = (
+        benchmark["summary"]["case_count"] == 16
+        and benchmark["mode_comparison"]["lexical"]["passed_cases"] >= 15
+        and benchmark["mode_comparison"]["local_vector"]["passed_cases"] == 16
+        and benchmark["mode_comparison"]["hybrid"]["passed_cases"] == 16
+    )
+    embedding_passed = (
+        bool(embedding_checks)
+        and all(item["status"] == "screened_not_adopted" and not item["eligible_for_install"] for item in embedding_checks)
+        and all(item["external_action_executed"] is False for item in embedding_checks)
+    )
+    owner_history_passed = (
+        owner_history["entry_count"] == 2
+        and owner_history["evidence_mutated"] is False
+        and owner_history["external_action_executed"] is False
+        and owner_history["approval_applied"] is False
+    )
     all_checks = [
         core_passed,
         abstention_check["passed"],
         feedback_regression["passed"],
         all(item["passed"] for item in evidence_checks),
         all(item["passed"] for item in external_checks),
-        benchmark["summary"]["case_count"] == 16
-        and benchmark["mode_comparison"]["lexical"]["passed_cases"] >= 15
-        and benchmark["mode_comparison"]["local_vector"]["passed_cases"] == 16
-        and benchmark["mode_comparison"]["hybrid"]["passed_cases"] == 16,
-        bool(embedding_checks)
-        and all(item["status"] == "screened_not_adopted" and not item["eligible_for_install"] for item in embedding_checks)
-        and all(item["external_action_executed"] is False for item in embedding_checks),
+        benchmark_passed,
+        embedding_passed,
         review_queue_check["passed"],
+        owner_history_passed,
     ]
     return {
         "schema_version": "1.0",
@@ -220,12 +236,13 @@ def run_trial(root: Path) -> dict[str, Any]:
         "external_intake": external_checks,
         "evidence_index": evidence_checks,
         "extended_benchmark": {
-            "passed": all_checks[-1],
+            "passed": benchmark_passed,
             "case_count": benchmark["summary"]["case_count"],
             "mode_comparison": benchmark["mode_comparison"],
         },
-        "embedding_gate": {"passed": all_checks[-1], "candidates": embedding_checks},
+        "embedding_gate": {"passed": embedding_passed, "candidates": embedding_checks},
         "owner_review_queue": review_queue_check,
+        "owner_review_history": owner_history,
         "boundaries": manifest["boundaries"],
     }
 
@@ -240,6 +257,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Citation-first answer: {'PASS' if report['core_flow']['passed'] else 'FAIL'}",
         f"- Missing-evidence abstention: {'PASS' if report['failure_path']['passed'] else 'FAIL'}",
         f"- Common-credential regression: {'PASS' if report['feedback_regression']['passed'] else 'FAIL'}",
+        f"- Owner-review history boundary: {'PASS' if report['owner_review_history']['approval_applied'] is False else 'FAIL'}",
         f"- Evidence claims checked: {len(report['evidence_index'])}",
         f"- External candidates screened: {len(report['external_intake'])}",
         "",

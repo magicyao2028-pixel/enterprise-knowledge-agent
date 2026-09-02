@@ -1,0 +1,20 @@
+[
+  {
+    "review_id": "OWNER-REV-001",
+    "document_id": "KB-REVIEW-001",
+    "reviewed_on": "2026-08-31",
+    "decision": "renew",
+    "owner": "Finance",
+    "note": "Synthetic owner renewed the stale reimbursement source after a hypothetical source check.",
+    "approval_applied": false
+  },
+  {
+    "review_id": "OWNER-REV-002",
+    "document_id": "KB-REVIEW-002",
+    "reviewed_on": "2026-09-01",
+    "decision": "escalate",
+    "owner": "Regional Operations",
+    "note": "Synthetic owner escalated the structured conflict for human resolution before retrieval reliance.",
+    "approval_applied": false
+  }
+]

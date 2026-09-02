@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0 - 2026-09-02
+
+- added a chronological owner-review history summary tied to queued document IDs;
+- preserved advisory review, no-mutation and zero-external-action boundaries;
+- added fail-closed validation and trial evidence for owner decisions.
+
 ## 0.9.0 - 2026-08-31
 
 - Added a deterministic owner-review queue for stale and conflicting knowledge documents.

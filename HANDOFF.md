@@ -2,8 +2,8 @@
 
 ## Current state
 
-- Release stage: v0.9 trial-readiness prototype.
-- Maintenance completed: M8/10.
+- Release stage: v1.0 trial-readiness prototype.
+- Maintenance completed: M9/10.
 - Core flow: validated corpus → query safety → metadata filter → stable chunking → lexical/local-vector/hybrid retrieval → freshness/conflict assessment → chunk-cited answer or governed abstention.
 - Public data: synthetic only.
 - Runtime cost: zero paid API dependency.
@@ -45,7 +45,13 @@ PYTHONPATH=src python -m enterprise_knowledge_agent.evaluation_cli --retrieval-m
 
 ## Next maintenance round
 
-M9 can add a bounded review-history or feedback-replay improvement. Keep lexical retrieval available and do not treat the current hashed reranker as semantic search.
+M10 can add a bounded review-history or feedback-replay improvement. Keep lexical retrieval available and do not treat the current hashed reranker as semantic search.
+
+## M9 result
+
+- Added a chronological owner-review history summary tied to queued document IDs.
+- Duplicate IDs, unknown documents, invalid decisions and out-of-order dates fail closed.
+- Decisions remain advisory: evidence, documents and retrieval are not mutated and no external action is executed.
 
 ## Known limitations
 

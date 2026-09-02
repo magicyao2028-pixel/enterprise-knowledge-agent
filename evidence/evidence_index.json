@@ -107,6 +107,16 @@
         {"kind": "tests", "path": "tests/test_review_queue.py"},
         {"kind": "trial", "path": "src/enterprise_knowledge_agent/trial.py"}
       ]
+    },
+    {
+      "claim_id": "KNOW-REVIEW-HISTORY-001",
+      "statement": "Synthetic owner-review decisions are summarized chronologically against queued documents without mutating evidence or retrieval behavior.",
+      "artifacts": [
+        {"kind": "implementation", "path": "src/enterprise_knowledge_agent/review_history.py"},
+        {"kind": "fixture", "path": "data/owner_review_history.json"},
+        {"kind": "tests", "path": "tests/test_review_history.py"},
+        {"kind": "trial", "path": "src/enterprise_knowledge_agent/trial.py"}
+      ]
     }
   ],
   "boundaries": [
