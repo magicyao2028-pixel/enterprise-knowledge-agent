@@ -7,6 +7,7 @@ from .models import KnowledgeDocument, MetadataFilters
 from .embedding_gate import assess_embedding_candidate
 from .review_queue import build_owner_review_queue
 from .review_history import summarize_owner_review_history
+from .owner_feedback_replay import replay_owner_feedback
 
-__all__ = ["KnowledgeAgent", "KnowledgeDocument", "MetadataFilters", "assess_evidence", "load_documents", "assess_embedding_candidate", "build_owner_review_queue", "summarize_owner_review_history"]
+__all__ = ["KnowledgeAgent", "KnowledgeDocument", "MetadataFilters", "assess_evidence", "load_documents", "assess_embedding_candidate", "build_owner_review_queue", "summarize_owner_review_history", "replay_owner_feedback"]
 __version__ = "1.0.0"

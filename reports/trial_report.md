@@ -7,7 +7,8 @@
 - Missing-evidence abstention: PASS
 - Common-credential regression: PASS
 - Owner-review history boundary: PASS
-- Evidence claims checked: 12
+- Owner-feedback replay and exclusion: PASS
+- Evidence claims checked: 13
 - External candidates screened: 2
 
 ## Pilot boundary

@@ -163,6 +163,16 @@
         "src/enterprise_knowledge_agent/trial.py"
       ],
       "passed": true
+    },
+    {
+      "claim_id": "KNOW-OWNER-FEEDBACK-001",
+      "artifact_paths": [
+        "src/enterprise_knowledge_agent/owner_feedback_replay.py",
+        "data/owner_feedback_replay.json",
+        "tests/test_owner_feedback_replay.py",
+        "src/enterprise_knowledge_agent/trial.py"
+      ],
+      "passed": true
     }
   ],
   "extended_benchmark": {
@@ -239,6 +249,43 @@
     "external_action_executed": false,
     "approval_applied": false,
     "boundary": "Owner review history records synthetic decisions for audit; it does not edit documents, promote evidence or alter retrieval behavior."
+  },
+  "owner_feedback": {
+    "schema_version": "1.0",
+    "record_count": 3,
+    "status_counts": {
+      "accepted": 1,
+      "pending": 1,
+      "rejected": 1
+    },
+    "replayed_count": 1,
+    "excluded_count": 2,
+    "replayed": [
+      {
+        "feedback_id": "OWNER-FB-001",
+        "review_id": "OWNER-REV-001",
+        "status": "accepted",
+        "passed": true
+      }
+    ],
+    "excluded": [
+      {
+        "feedback_id": "OWNER-FB-002",
+        "review_id": "OWNER-REV-002",
+        "status": "pending",
+        "passed": true
+      },
+      {
+        "feedback_id": "OWNER-FB-003",
+        "review_id": "OWNER-REV-001",
+        "status": "rejected",
+        "passed": true
+      }
+    ],
+    "approval_applied": false,
+    "evidence_mutated": false,
+    "external_action_executed": false,
+    "boundary": "Accepted owner feedback is replayed for audit visibility only; it does not renew, escalate or defer a document."
   },
   "boundaries": [
     "Synthetic corpus only; no claim of enterprise retrieval accuracy or real adoption.",

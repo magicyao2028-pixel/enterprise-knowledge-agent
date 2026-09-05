@@ -12,6 +12,7 @@ from .evaluation import evaluate_queries
 from .embedding_gate import assess_embedding_candidate
 from .review_queue import build_owner_review_queue
 from .review_history import summarize_owner_review_history
+from .owner_feedback_replay import replay_owner_feedback
 
 
 FEEDBACK_CLASSES = {"defect", "requirement", "usability", "performance", "safety", "documentation"}
@@ -146,6 +147,11 @@ def run_trial(root: Path) -> dict[str, Any]:
     }
     owner_history_payload = json.loads((root / "data" / "owner_review_history.json").read_text(encoding="utf-8"))
     owner_history = summarize_owner_review_history(review_queue, owner_history_payload)
+    owner_feedback = replay_owner_feedback(
+        review_queue,
+        owner_history_payload,
+        json.loads((root / "data" / "owner_feedback_replay.json").read_text(encoding="utf-8")),
+    )
     benchmark = evaluate_queries(
         root / "data" / "knowledge.json",
         root / "data" / "evaluation_queries_m6.json",
@@ -209,6 +215,12 @@ def run_trial(root: Path) -> dict[str, Any]:
         and owner_history["external_action_executed"] is False
         and owner_history["approval_applied"] is False
     )
+    owner_feedback_passed = (
+        owner_feedback["replayed_count"] == 1
+        and owner_feedback["excluded_count"] == 2
+        and owner_feedback["approval_applied"] is False
+        and owner_feedback["evidence_mutated"] is False
+    )
     all_checks = [
         core_passed,
         abstention_check["passed"],
@@ -219,6 +231,7 @@ def run_trial(root: Path) -> dict[str, Any]:
         embedding_passed,
         review_queue_check["passed"],
         owner_history_passed,
+        owner_feedback_passed,
     ]
     return {
         "schema_version": "1.0",
@@ -243,6 +256,7 @@ def run_trial(root: Path) -> dict[str, Any]:
         "embedding_gate": {"passed": embedding_passed, "candidates": embedding_checks},
         "owner_review_queue": review_queue_check,
         "owner_review_history": owner_history,
+        "owner_feedback": owner_feedback,
         "boundaries": manifest["boundaries"],
     }
 
@@ -258,6 +272,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Missing-evidence abstention: {'PASS' if report['failure_path']['passed'] else 'FAIL'}",
         f"- Common-credential regression: {'PASS' if report['feedback_regression']['passed'] else 'FAIL'}",
         f"- Owner-review history boundary: {'PASS' if report['owner_review_history']['approval_applied'] is False else 'FAIL'}",
+        f"- Owner-feedback replay and exclusion: {'PASS' if report['owner_feedback']['replayed_count'] == 1 and report['owner_feedback']['excluded_count'] == 2 else 'FAIL'}",
         f"- Evidence claims checked: {len(report['evidence_index'])}",
         f"- External candidates screened: {len(report['external_intake'])}",
         "",

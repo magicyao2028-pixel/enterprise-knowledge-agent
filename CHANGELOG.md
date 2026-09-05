@@ -2,6 +2,9 @@
 
 ## 1.0.0 - 2026-09-02
 
+- added synthetic owner-feedback replay linked to chronological review history;
+- kept pending/rejected feedback excluded and approvals, evidence and retrieval unchanged;
+- added trial, fixture and fail-closed regression coverage for the review-only boundary.
 - added a chronological owner-review history summary tied to queued document IDs;
 - preserved advisory review, no-mutation and zero-external-action boundaries;
 - added fail-closed validation and trial evidence for owner decisions.

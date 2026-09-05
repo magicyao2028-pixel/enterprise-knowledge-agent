@@ -1,0 +1,5 @@
+[
+  {"feedback_id": "OWNER-FB-001", "review_id": "OWNER-REV-001", "recorded_on": "2026-08-31", "status": "accepted", "summary": "Synthetic owner confirmed that the conflict item should remain visible for a follow-up review.", "applied": false},
+  {"feedback_id": "OWNER-FB-002", "review_id": "OWNER-REV-002", "recorded_on": "2026-09-01", "status": "pending", "summary": "Synthetic owner requested more source context before deciding whether to renew the item.", "applied": false},
+  {"feedback_id": "OWNER-FB-003", "review_id": "OWNER-REV-001", "recorded_on": "2026-09-02", "status": "rejected", "summary": "Synthetic owner rejected an optional reminder wording change.", "applied": false}
+]

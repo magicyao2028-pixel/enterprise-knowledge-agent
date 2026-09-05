@@ -117,6 +117,16 @@
         {"kind": "tests", "path": "tests/test_review_history.py"},
         {"kind": "trial", "path": "src/enterprise_knowledge_agent/trial.py"}
       ]
+    },
+    {
+      "claim_id": "KNOW-OWNER-FEEDBACK-001",
+      "statement": "Synthetic owner feedback can be matched to review history and replayed as audit metadata while pending or rejected items remain excluded and approvals stay false.",
+      "artifacts": [
+        {"kind": "implementation", "path": "src/enterprise_knowledge_agent/owner_feedback_replay.py"},
+        {"kind": "fixture", "path": "data/owner_feedback_replay.json"},
+        {"kind": "tests", "path": "tests/test_owner_feedback_replay.py"},
+        {"kind": "trial", "path": "src/enterprise_knowledge_agent/trial.py"}
+      ]
     }
   ],
   "boundaries": [
