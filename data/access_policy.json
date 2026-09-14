@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "policy_id": "synthetic-document-access-v1",
+  "source_type": "synthetic",
+  "principals": {
+    "customer-operations-reviewer": {
+      "allowed_departments": ["Customer Operations"],
+      "allowed_document_ids": []
+    },
+    "supply-chain-reviewer": {
+      "allowed_departments": ["Supply Chain"],
+      "allowed_document_ids": []
+    },
+    "content-checklist-reviewer": {
+      "allowed_departments": [],
+      "allowed_document_ids": ["KB-CNT-004"]
+    }
+  }
+}

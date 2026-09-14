@@ -2,9 +2,9 @@
 
 ## Current state
 
-- Release stage: v1.0 trial-readiness prototype.
+- Release stage: v1.1 post-M10 boundary-hardening prototype.
 - Maintenance completed: M10/10.
-- Core flow: validated corpus → query safety → metadata filter → stable chunking → lexical/local-vector/hybrid retrieval → freshness/conflict assessment → chunk-cited answer or governed abstention.
+- Post-M10 P2 Slot 2: strict synthetic principal policy → fail-closed department/document prefilter → query safety → metadata filter → stable chunking → lexical/local-vector/hybrid retrieval → freshness/conflict assessment → chunk-cited answer or governed abstention.
 - Public data: synthetic only.
 - Runtime cost: zero paid API dependency.
 
@@ -13,6 +13,7 @@
 ```bash
 PYTHONPATH=src python -m unittest discover -s tests -v
 PYTHONPATH=src python -m enterprise_knowledge_agent.cli "How quickly should an urgent complaint be escalated?"
+PYTHONPATH=src python -m enterprise_knowledge_agent.cli "How quickly should an urgent complaint be escalated?" --access-policy data/access_policy.json --principal-id customer-operations-reviewer
 PYTHONPATH=src python -m enterprise_knowledge_agent.evaluation_cli
 PYTHONPATH=src python -m enterprise_knowledge_agent.trial_cli
 PYTHONPATH=src python -m enterprise_knowledge_agent.evaluation_cli --retrieval-mode lexical
@@ -43,9 +44,17 @@ PYTHONPATH=src python -m enterprise_knowledge_agent.evaluation_cli --retrieval-m
 - Queue items retain department ownership, reason codes, priority and a bounded next action.
 - The queue is review-only: it does not mutate evidence, documents or retrieval behavior and performs no external action.
 
+## Post-M10 P2 result
+
+- Added `access_control.py` and a strict synthetic policy fixture mapping caller claims to allowed departments and/or document IDs.
+- The authorized subset is selected before `KnowledgeAgent` can retrieve; an unknown principal returns `access_denied` with no citation and no retrieval call.
+- `--access-policy` and `--principal-id` are paired CLI inputs. Department scoping cannot be presented as protected without them.
+- Every protected response includes a deterministic receipt stating that the principal is caller supplied and that authentication, identity verification and tenant isolation were not performed.
+- This is offline boundary evidence only. A real service must bind the principal to an authenticated identity and enforce production authorization outside this package.
+
 ## Next maintenance round
 
-M10 is complete. The next step is portfolio-level review or a separately confirmed maintenance wave. Keep lexical retrieval available and do not treat the current hashed reranker as semantic search.
+Post-M10 P2 Slot 2 is complete. Do not start another maintenance wave without a separately confirmed contract. Keep lexical retrieval available and do not treat the current hashed reranker as semantic search.
 
 ## M9 result
 
@@ -57,7 +66,7 @@ M10 is complete. The next step is portfolio-level review or a separately confirm
 ## Known limitations
 
 - English lexical retrieval and an optional local hashed-vector reranker;
-- exact metadata filters are retrieval controls, not user authorization;
+- the access-policy fixture is an offline document-scope simulation, not authentication or production authorization;
 - small synthetic corpus;
 - perfect fixture scores do not estimate production retrieval accuracy;
 - extractive answer composition;
@@ -67,4 +76,4 @@ M10 is complete. The next step is portfolio-level review or a separately confirm
 - browser and Python implementations are mirrored manually;
 - the browser demo remains lexical-only and does not claim parity with the optional Python vector modes;
 - the secret boundary is a conservative pattern screen, not a complete data-loss-prevention system;
-- no authentication, permissions, persistence, API or real user study.
+- no authentication, verified identity, tenant isolation, persistence, service API or real user study.

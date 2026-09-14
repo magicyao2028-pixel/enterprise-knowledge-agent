@@ -5,8 +5,8 @@
 | Field | Value |
 | --- | --- |
 | Product | Enterprise Knowledge Agent |
-| Version | 0.4 |
-| Status | Product-validation MVP |
+| Version | 1.1 |
+| Status | Public trial-readiness prototype with offline access-boundary proof |
 | Primary user | Employee in a small or medium-sized business |
 | Public data policy | Synthetic documents only |
 
@@ -35,7 +35,7 @@ This hypothesis has not been validated with real users. v0.1 tests technical beh
 - identify stale, missing or conflicting content;
 - retain control over policy changes and high-impact decisions.
 
-## 5. v0.1 scope
+## 5. Public prototype scope
 
 ### In scope
 
@@ -51,12 +51,14 @@ This hypothesis has not been validated with real users. v0.1 tests technical beh
 10. Filter retrieval by exact department, tag and minimum update date.
 11. Mark retrieved evidence stale using an explicit analysis date, source age and review deadline.
 12. Detect different values attached to the same structured policy key and stop answer composition.
+13. Optionally validate a strict synthetic principal policy and reduce the corpus to allowed departments/documents before retrieval.
+14. Fail closed for unknown principals and emit a receipt that distinguishes policy lookup from authentication.
 
 ### Out of scope
 
 - semantic embeddings, vector databases or paid model calls;
 - automatic ingestion from private drives or chat systems;
-- user authentication, authorization and document-level permissions;
+- user authentication, verified identity, tenant isolation and production authorization;
 - multilingual retrieval;
 - model-generated summaries or legal/financial decisions;
 - production availability or measured business impact.
@@ -76,6 +78,8 @@ This hypothesis has not been validated with real users. v0.1 tests technical beh
 | FR-09 | Cite chunks | Should | Every answered response identifies the stable chunk used as evidence. |
 | FR-10 | Check freshness | Must | Stale or future-dated supporting evidence is surfaced and routed to human review. |
 | FR-11 | Surface conflicts | Must | Different values for the same structured claim key produce a conflict response with all source IDs. |
+| FR-12 | Prefilter document scope | Must | Protected Python/CLI requests apply a strict synthetic principal policy before retrieval; unknown principals retrieve nothing. |
+| FR-13 | Disclose identity boundary | Must | Protected responses state that the caller claim is not authentication, identity verification or tenant isolation. |
 
 ## 7. Success metrics for a future pilot
 
@@ -88,4 +92,4 @@ This hypothesis has not been validated with real users. v0.1 tests technical beh
 
 ## 8. Release gate
 
-Do not claim time savings, accuracy improvement, production use or employee adoption until a controlled private pilot establishes baseline and post-use evidence. Structured conflict detection must not be described as general free-text contradiction detection.
+Do not claim time savings, accuracy improvement, production use or employee adoption until a controlled private pilot establishes baseline and post-use evidence. Do not describe the offline policy fixture as authentication or production authorization. Structured conflict detection must not be described as general free-text contradiction detection.

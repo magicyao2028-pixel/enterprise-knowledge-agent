@@ -6,10 +6,12 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from .access_control import ask_with_access_control, load_access_policy
 from .agent import KnowledgeAgent
 from .corpus import load_documents
 from .evaluation import evaluate_queries
 from .embedding_gate import assess_embedding_candidate
+from .models import MetadataFilters
 from .review_queue import build_owner_review_queue
 from .review_history import summarize_owner_review_history
 from .owner_feedback_replay import replay_owner_feedback
@@ -163,7 +165,11 @@ def run_trial(root: Path) -> dict[str, Any]:
         raise ValueError("Trial sample input is missing or unsafe")
     documents = load_documents(sample_path)
     agent = KnowledgeAgent(documents)
-    core = agent.ask(
+    access_policy = load_access_policy(root / "data" / "access_policy.json")
+    core = ask_with_access_control(
+        documents,
+        access_policy,
+        "customer-operations-reviewer",
         manifest["trial"]["question"],
         as_of_date=manifest["trial"]["as_of_date"],
     )
@@ -174,6 +180,64 @@ def run_trial(root: Path) -> dict[str, Any]:
         and core["citations"][0]["document_id"] == expected["top_document_id"]
         and expected["answer_contains"] in core["answer"]
     )
+    unknown_principal = ask_with_access_control(
+        documents,
+        access_policy,
+        "unknown-principal",
+        "What is the inventory policy?",
+        as_of_date=manifest["trial"]["as_of_date"],
+    )
+    cross_scope = ask_with_access_control(
+        documents,
+        access_policy,
+        "customer-operations-reviewer",
+        "What must be reviewed before AI-generated content is published?",
+        MetadataFilters(departments=("Content Operations",)),
+        as_of_date=manifest["trial"]["as_of_date"],
+    )
+    document_grant = ask_with_access_control(
+        documents,
+        access_policy,
+        "content-checklist-reviewer",
+        "What must be reviewed before AI-generated content is published?",
+        as_of_date=manifest["trial"]["as_of_date"],
+    )
+    authorization_receipt = core["authorization_receipt"]
+    access_control_check = {
+        "passed": (
+            core_passed
+            and authorization_receipt["authorized"] is True
+            and authorization_receipt["prefilter_applied_before_retrieval"] is True
+            and authorization_receipt["caller_claim_is_authentication"] is False
+            and authorization_receipt["authentication_performed"] is False
+            and authorization_receipt["identity_verified"] is False
+            and authorization_receipt["tenant_isolation_provided"] is False
+            and authorization_receipt["document_count_before"] == 4
+            and authorization_receipt["document_count_after"] == 2
+            and unknown_principal["status"] == "access_denied"
+            and unknown_principal["citations"] == []
+            and unknown_principal["authorization_receipt"]["reason"]
+            == "unknown_principal"
+            and cross_scope["status"] == "no_evidence"
+            and cross_scope["citations"] == []
+            and document_grant["status"] == "answered"
+            and {item["document_id"] for item in document_grant["citations"]}
+            == {"KB-CNT-004"}
+        ),
+        "policy_id": authorization_receipt["policy_id"],
+        "principal_id_source": authorization_receipt["principal_id_source"],
+        "authorized_document_ids": authorization_receipt["authorized_document_ids"],
+        "unknown_principal_status": unknown_principal["status"],
+        "cross_scope_status": cross_scope["status"],
+        "document_grant_citations": [
+            item["document_id"] for item in document_grant["citations"]
+        ],
+        "prefilter_applied_before_retrieval": True,
+        "authentication_performed": False,
+        "identity_verified": False,
+        "tenant_isolation_provided": False,
+        "boundary": authorization_receipt["boundary"],
+    }
 
     no_evidence = agent.ask("What is the office parking policy?", as_of_date=manifest["trial"]["as_of_date"])
     abstention_check = {
@@ -223,6 +287,7 @@ def run_trial(root: Path) -> dict[str, Any]:
     )
     all_checks = [
         core_passed,
+        access_control_check["passed"],
         abstention_check["passed"],
         feedback_regression["passed"],
         all(item["passed"] for item in evidence_checks),
@@ -244,6 +309,7 @@ def run_trial(root: Path) -> dict[str, Any]:
             "top_document_id": core["citations"][0]["document_id"] if core["citations"] else None,
             "citation_count": len(core["citations"]),
         },
+        "access_control": access_control_check,
         "failure_path": abstention_check,
         "feedback_regression": feedback_regression,
         "external_intake": external_checks,
@@ -269,6 +335,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         f"- Overall: **{'PASS' if report['overall_passed'] else 'FAIL'}**",
         f"- Citation-first answer: {'PASS' if report['core_flow']['passed'] else 'FAIL'}",
+        f"- Offline document-access prefilter: {'PASS' if report['access_control']['passed'] else 'FAIL'}",
         f"- Missing-evidence abstention: {'PASS' if report['failure_path']['passed'] else 'FAIL'}",
         f"- Common-credential regression: {'PASS' if report['feedback_regression']['passed'] else 'FAIL'}",
         f"- Owner-review history boundary: {'PASS' if report['owner_review_history']['approval_applied'] is False else 'FAIL'}",

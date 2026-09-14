@@ -24,6 +24,12 @@ class TrialReadinessTests(unittest.TestCase):
         self.assertTrue(report["owner_review_queue"]["passed"])
         self.assertEqual(report["owner_review_queue"]["item_count"], 2)
         self.assertEqual(report["core_flow"]["top_document_id"], "KB-SVC-002")
+        self.assertTrue(report["access_control"]["passed"])
+        self.assertEqual(report["access_control"]["unknown_principal_status"], "access_denied")
+        self.assertEqual(report["access_control"]["cross_scope_status"], "no_evidence")
+        self.assertFalse(report["access_control"]["authentication_performed"])
+        self.assertFalse(report["access_control"]["identity_verified"])
+        self.assertFalse(report["access_control"]["tenant_isolation_provided"])
         self.assertEqual(report["feedback_regression"]["status"], "blocked")
         self.assertTrue(all(status == "blocked" for status in report["feedback_regression"]["statuses"]))
 

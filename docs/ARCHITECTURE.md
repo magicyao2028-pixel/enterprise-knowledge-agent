@@ -17,6 +17,7 @@ flowchart TB
       WEB[Static browser prototype]
     end
     subgraph Agent
+      P[Offline document-access prefilter]
       V[Query validator]
       S[Safety boundary]
       F[Metadata filter]
@@ -30,10 +31,15 @@ flowchart TB
       J[Validated JSON corpus]
       M[Source metadata]
     end
-    CLI --> V
+    CLI --> AP{Policy and principal supplied?}
     WEB --> V
+    AP -->|Yes| P
+    AP -->|No: public synthetic demo| V
+    P --> V
     V --> S --> F --> K --> R
-    J --> F
+    J --> P
+    J -. unprotected demo .-> F
+    P -. authorized subset .-> F
     M --> F
     R --> T --> G
     G -->|Supported| C
@@ -47,6 +53,7 @@ The browser prototype mirrors the main decision flow for a zero-setup demonstrat
 | Component | Responsibility |
 | --- | --- |
 | `models.py` | Validate knowledge documents, metadata filters, chunks and response evidence objects. |
+| `access_control.py` | Strictly validate the synthetic principal policy, select the allowed document subset before retrieval and emit a non-authentication receipt. |
 | `corpus.py` | Load JSON, reject malformed content and duplicate identifiers. |
 | `retrieval.py` | Split stable chunks, apply metadata scope, score and rank supporting excerpts. |
 | `governance.py` | Check source age, review deadlines and structured claim-value conflicts. |
@@ -68,4 +75,4 @@ flowchart LR
     API --> OBS[Logs, metrics and traces]
 ```
 
-The v0.4 conflict gate compares values only when documents share the same explicit `claim_key`; it does not infer semantic contradiction. Production decisions still required include tenant isolation, permissions, encryption, retention, source-of-truth ownership, model budget, observability, incident response and deletion workflows.
+The browser remains an unprotected synthetic demonstration; the offline access prefilter is implemented in the Python path only. Its principal ID is caller supplied, not authenticated. The v0.4 conflict gate compares values only when documents share the same explicit `claim_key`; it does not infer semantic contradiction. Production decisions still required include authenticated identity, tenant isolation, server-enforced permissions, encryption, retention, source-of-truth ownership, model budget, observability, incident response and deletion workflows.

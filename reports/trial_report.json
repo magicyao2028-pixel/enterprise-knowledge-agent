@@ -9,6 +9,25 @@
     "top_document_id": "KB-SVC-002",
     "citation_count": 2
   },
+  "access_control": {
+    "passed": true,
+    "policy_id": "synthetic-document-access-v1",
+    "principal_id_source": "caller_supplied",
+    "authorized_document_ids": [
+      "KB-RET-001",
+      "KB-SVC-002"
+    ],
+    "unknown_principal_status": "access_denied",
+    "cross_scope_status": "no_evidence",
+    "document_grant_citations": [
+      "KB-CNT-004"
+    ],
+    "prefilter_applied_before_retrieval": true,
+    "authentication_performed": false,
+    "identity_verified": false,
+    "tenant_isolation_provided": false,
+    "boundary": "principal_id is a caller-supplied policy lookup claim; it is not authentication, identity verification or production authorization."
+  },
   "failure_path": {
     "passed": true,
     "status": "no_evidence"
@@ -173,6 +192,17 @@
         "src/enterprise_knowledge_agent/trial.py"
       ],
       "passed": true
+    },
+    {
+      "claim_id": "KNOW-ACCESS-001",
+      "artifact_paths": [
+        "src/enterprise_knowledge_agent/access_control.py",
+        "data/access_policy.json",
+        "tests/test_access_control.py",
+        "src/enterprise_knowledge_agent/trial.py",
+        "docs/SECURITY.md"
+      ],
+      "passed": true
     }
   ],
   "extended_benchmark": {
@@ -289,7 +319,7 @@
   },
   "boundaries": [
     "Synthetic corpus only; no claim of enterprise retrieval accuracy or real adoption.",
-    "Metadata filters are retrieval controls, not authorization or tenant isolation.",
-    "A real pilot requires document ownership, access control, ingestion review and accountable human verification."
+    "The offline access policy and caller-supplied principal are a synthetic scope-enforcement proof, not authentication, verified identity, tenant isolation or production authorization.",
+    "A real pilot requires authenticated identity, server-owned policy, document ownership, ingestion review and accountable human verification."
   ]
 }

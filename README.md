@@ -16,6 +16,7 @@ This portfolio edition documents an AI application and product practice explored
 Policies, operating procedures and product knowledge are often scattered across chat messages and files. Employees spend time searching, receive inconsistent answers, and may act on stale or unsupported information. This prototype demonstrates a controlled knowledge workflow that:
 
 - searches an approved local corpus;
+- applies an optional strict, synthetic department/document policy before retrieval;
 - splits documents into stable, reviewable chunks before ranking;
 - filters retrieval by department, tag and minimum update date;
 - checks materially relevant sources for age and explicit review deadlines against a visible analysis date;
@@ -39,6 +40,7 @@ Policies, operating procedures and product knowledge are often scattered across 
 | Evaluation thinking | [Evaluation plan](docs/EVALUATION.md) and automated test cases |
 | Reproducible retrieval evidence | [Twelve-query baseline](reports/retrieval_evaluation.md) plus the expanded 16-case mode comparison |
 | Controlled search scope | Stable chunk IDs plus department, tag and freshness filters |
+| Offline access-boundary proof | Fail-closed principal policy prefilter, unknown-principal denial and explicit non-authentication receipt |
 | Knowledge governance | Explicit freshness report and structured conflicting-source gate |
 | System planning | [Architecture](docs/ARCHITECTURE.md) with explicit v0.1 boundaries |
 | Runnable proof | Python CLI, synthetic corpus and zero-cost [browser prototype](site/) |
@@ -46,10 +48,13 @@ Policies, operating procedures and product knowledge are often scattered across 
 
 ## Core workflow
 
+Protected Python/CLI flow:
+
 ```mermaid
 flowchart LR
-    Q[Employee question] --> V[Query and policy validation]
-    V --> R[Local document retrieval]
+    Q[Employee question plus caller claim] --> P[Offline access-policy prefilter]
+    P --> V[Query and policy validation]
+    V --> R[Local document retrieval over authorized subset]
     R --> E{Enough evidence?}
     E -->|No| H[Abstain and request human review]
     E -->|Yes| G{Fresh and consistent?}
@@ -58,7 +63,7 @@ flowchart LR
     A --> H2[Human verifies before action]
 ```
 
-The current implementation uses deterministic lexical retrieval. It is an Agent workflow prototype, not a claim of advanced semantic RAG or an autonomous enterprise assistant.
+The current implementation uses deterministic lexical retrieval. Protected CLI examples apply `data/access_policy.json` before retrieval. The supplied principal ID is only a policy lookup claim: the prototype does not authenticate or verify identity. It is an Agent workflow prototype, not a claim of advanced semantic RAG or an autonomous enterprise assistant.
 
 ## Quick start
 
@@ -68,7 +73,8 @@ Requirements: Python 3.10 or later. No third-party runtime dependency is require
 python -m pip install -e .
 knowledge-agent "How quickly should an urgent complaint be escalated?"
 knowledge-agent "What evidence is required for a damaged product return?" --output answer.json
-knowledge-agent "How should a complaint be escalated?" --department "Customer Operations" --tag complaint --updated-after 2026-07-01
+knowledge-agent "How should a complaint be escalated?" --access-policy data/access_policy.json --principal-id customer-operations-reviewer --department "Customer Operations" --tag complaint --updated-after 2026-07-01
+knowledge-agent "What must be reviewed before AI-generated content is published?" --access-policy data/access_policy.json --principal-id content-checklist-reviewer
 knowledge-agent "What is the domestic travel hotel reimbursement ceiling?" --corpus data/governance_fixture.json --as-of 2026-08-14
 knowledge-agent "How many supplier quotes are required?" --corpus data/governance_fixture.json --as-of 2026-08-14 --max-source-age-days 90
 knowledge-agent "How many supplier quotes are required?" --corpus data/governance_fixture.json --as-of 2026-08-14 --max-source-age-days 90 --retrieval-mode hybrid
@@ -118,7 +124,9 @@ The public sample is a JSON array using this shape:
 
 - The corpus is synthetic and small.
 - Retrieval is English lexical matching, not embeddings or semantic search.
-- Metadata filters are exact matches; they are not an authorization system.
+- Protected CLI requests apply the strict synthetic access policy before retrieval; unknown principals fail closed.
+- The policy fixture and caller-supplied principal ID demonstrate document-scope enforcement only. They are not authentication, verified identity, tenant isolation or production authorization.
+- Unprotected CLI use remains available only for the public synthetic demo; metadata filters by themselves are not authorization.
 - Answers are selected excerpts, not model-generated reasoning.
 - Conflict detection requires an identical structured `claim_key`; it does not infer contradiction from free text.
 - Freshness rules identify review risk, not whether a policy is legally or operationally valid.
@@ -153,8 +161,11 @@ These boundaries leave testable room for later maintenance instead of presenting
 - v0.5: reviewer trial, evidence index, governed external screening and feedback regression;
 - v0.6: optional local vector reranker and lexical/local-mode comparison benchmark;
 - v0.7: expanded 16-case benchmark and mode comparison;
-- v0.8: reviewed embedding-candidate gate with no dependency installation (current);
-- v1.0: controlled private pilot with knowledge-owner review.
+- v0.8: reviewed embedding-candidate gate with no dependency installation;
+- v0.9: deterministic owner-review queue;
+- v1.0: chronological owner-review history and synthetic feedback replay;
+- v1.1: offline fail-closed access prefilter with an explicit non-authentication receipt (current);
+- future private pilot: real authentication, identity-bound authorization, tenant isolation and knowledge-owner review.
 
 ## License
 

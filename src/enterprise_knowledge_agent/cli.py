@@ -5,17 +5,20 @@ import json
 from pathlib import Path
 
 from .agent import KnowledgeAgent
+from .access_control import ask_with_access_control, load_access_policy
 from .corpus import load_documents
 from .models import MetadataFilters
 from .retrieval import RETRIEVAL_MODES
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Ask a local enterprise knowledge corpus with citations.")
     parser.add_argument("query", help="Question to ask")
     parser.add_argument("--corpus", type=Path, default=Path("data/knowledge.json"), help="Knowledge JSON file")
     parser.add_argument("--top-k", type=int, default=3, help="Maximum number of retrieved documents")
     parser.add_argument("--department", action="append", default=[], help="Filter by department; may be repeated")
+    parser.add_argument("--access-policy", type=Path, help="Optional offline document-access policy")
+    parser.add_argument("--principal-id", help="Caller-supplied principal claim used with --access-policy")
     parser.add_argument("--tag", action="append", default=[], help="Filter by tag; may be repeated")
     parser.add_argument("--updated-after", help="Filter to documents updated on or after this ISO-8601 date")
     parser.add_argument("--as-of", dest="as_of_date", help="Analysis date for freshness checks; defaults to today")
@@ -27,19 +30,38 @@ def parse_args() -> argparse.Namespace:
         help="Retrieval strategy: lexical baseline, dependency-free local vector, or hybrid",
     )
     parser.add_argument("--output", type=Path, help="Optional path for the JSON answer")
-    return parser.parse_args()
+    args = parser.parse_args(argv)
+    if bool(args.access_policy) != bool(args.principal_id):
+        parser.error("--access-policy and --principal-id must be provided together")
+    if args.department and not args.access_policy:
+        parser.error("--department requires --access-policy and --principal-id")
+    return args
 
 
 def main() -> None:
     args = parse_args()
     filters = MetadataFilters(tuple(args.department), tuple(args.tag), args.updated_after)
-    answer = KnowledgeAgent(load_documents(args.corpus), top_k=args.top_k).ask(
-        args.query,
-        filters,
-        as_of_date=args.as_of_date,
-        max_source_age_days=args.max_source_age_days,
-        retrieval_mode=args.retrieval_mode,
-    )
+    documents = load_documents(args.corpus)
+    if args.access_policy:
+        answer = ask_with_access_control(
+            documents,
+            load_access_policy(args.access_policy),
+            args.principal_id,
+            args.query,
+            filters,
+            top_k=args.top_k,
+            as_of_date=args.as_of_date,
+            max_source_age_days=args.max_source_age_days,
+            retrieval_mode=args.retrieval_mode,
+        )
+    else:
+        answer = KnowledgeAgent(documents, top_k=args.top_k).ask(
+            args.query,
+            filters,
+            as_of_date=args.as_of_date,
+            max_source_age_days=args.max_source_age_days,
+            retrieval_mode=args.retrieval_mode,
+        )
     rendered = json.dumps(answer, ensure_ascii=False, indent=2)
     if args.output:
         args.output.write_text(rendered + "\n", encoding="utf-8")

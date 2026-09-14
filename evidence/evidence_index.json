@@ -127,11 +127,22 @@
         {"kind": "tests", "path": "tests/test_owner_feedback_replay.py"},
         {"kind": "trial", "path": "src/enterprise_knowledge_agent/trial.py"}
       ]
+    },
+    {
+      "claim_id": "KNOW-ACCESS-001",
+      "statement": "A strict synthetic policy reduces the corpus by department or document ID before retrieval, denies unknown principals without retrieval and discloses that the caller claim is not authentication.",
+      "artifacts": [
+        {"kind": "implementation", "path": "src/enterprise_knowledge_agent/access_control.py"},
+        {"kind": "fixture", "path": "data/access_policy.json"},
+        {"kind": "tests", "path": "tests/test_access_control.py"},
+        {"kind": "trial", "path": "src/enterprise_knowledge_agent/trial.py"},
+        {"kind": "security", "path": "docs/SECURITY.md"}
+      ]
     }
   ],
   "boundaries": [
     "Synthetic corpus only; no claim of enterprise retrieval accuracy or real adoption.",
-    "Metadata filters are retrieval controls, not authorization or tenant isolation.",
-    "A real pilot requires document ownership, access control, ingestion review and accountable human verification."
+    "The offline access policy and caller-supplied principal are a synthetic scope-enforcement proof, not authentication, verified identity, tenant isolation or production authorization.",
+    "A real pilot requires authenticated identity, server-owned policy, document ownership, ingestion review and accountable human verification."
   ]
 }

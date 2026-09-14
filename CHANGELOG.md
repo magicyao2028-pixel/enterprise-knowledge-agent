@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 - 2026-09-14
+
+- added a strict synthetic principal-to-department/document access policy that filters the corpus before retrieval;
+- denied unknown principals without running retrieval and added protected CLI arguments that must be supplied together;
+- added deterministic authorization receipts, tests and trial probes while explicitly excluding authentication, identity verification and tenant isolation.
+
 ## 1.0.0 - 2026-09-02
 
 - added synthetic owner-feedback replay linked to chronological review history;
