@@ -207,11 +207,14 @@ def run_trial(root: Path) -> dict[str, Any]:
         "passed": (
             core_passed
             and authorization_receipt["authorized"] is True
+            and authorization_receipt["principal_id_source"] == "caller_supplied"
             and authorization_receipt["prefilter_applied_before_retrieval"] is True
             and authorization_receipt["caller_claim_is_authentication"] is False
             and authorization_receipt["authentication_performed"] is False
             and authorization_receipt["identity_verified"] is False
             and authorization_receipt["tenant_isolation_provided"] is False
+            and authorization_receipt["persistence_executed"] is False
+            and authorization_receipt["external_action_executed"] is False
             and authorization_receipt["document_count_before"] == 4
             and authorization_receipt["document_count_after"] == 2
             and unknown_principal["status"] == "access_denied"
@@ -232,10 +235,20 @@ def run_trial(root: Path) -> dict[str, Any]:
         "document_grant_citations": [
             item["document_id"] for item in document_grant["citations"]
         ],
-        "prefilter_applied_before_retrieval": True,
-        "authentication_performed": False,
-        "identity_verified": False,
-        "tenant_isolation_provided": False,
+        "prefilter_applied_before_retrieval": authorization_receipt[
+            "prefilter_applied_before_retrieval"
+        ],
+        "authentication_performed": authorization_receipt[
+            "authentication_performed"
+        ],
+        "identity_verified": authorization_receipt["identity_verified"],
+        "tenant_isolation_provided": authorization_receipt[
+            "tenant_isolation_provided"
+        ],
+        "persistence_executed": authorization_receipt["persistence_executed"],
+        "external_action_executed": authorization_receipt[
+            "external_action_executed"
+        ],
         "boundary": authorization_receipt["boundary"],
     }
 

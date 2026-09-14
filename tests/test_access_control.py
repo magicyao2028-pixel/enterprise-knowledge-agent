@@ -45,8 +45,13 @@ class AccessControlTests(unittest.TestCase):
         )
         self.assertEqual(receipt["document_count_before"], 4)
         self.assertEqual(receipt["document_count_after"], 2)
+        self.assertEqual(receipt["principal_id_source"], "caller_supplied")
         self.assertTrue(receipt["prefilter_applied_before_retrieval"])
         self.assertFalse(receipt["authentication_performed"])
+        self.assertFalse(receipt["identity_verified"])
+        self.assertFalse(receipt["tenant_isolation_provided"])
+        self.assertFalse(receipt["persistence_executed"])
+        self.assertFalse(receipt["external_action_executed"])
         self.assertFalse(receipt["caller_claim_is_authentication"])
 
     def test_document_id_policy_grants_only_named_document(self):

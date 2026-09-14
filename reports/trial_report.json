@@ -26,6 +26,8 @@
     "authentication_performed": false,
     "identity_verified": false,
     "tenant_isolation_provided": false,
+    "persistence_executed": false,
+    "external_action_executed": false,
     "boundary": "principal_id is a caller-supplied policy lookup claim; it is not authentication, identity verification or production authorization."
   },
   "failure_path": {
